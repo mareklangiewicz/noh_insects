@@ -19,7 +19,7 @@ NOH library depends on jQuery. TODO: Limit jQuery usage for NOH to be able to wo
 
 __Example:__
 
-*   Instead of HTML code like:
+Instead of HTML code like:
 
     <div id="someid">
         <h2>EXAMPLE</h2>
@@ -33,7 +33,7 @@ __Example:__
         </p>
     </div>
 
-*   We write JS code like:
+We write JS code like:
 
     div({id:"someid"},
         h2("EXAMPLE"),
