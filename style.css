@@ -1,0 +1,27 @@
+body {
+	font-family: "Verdana";
+	font-size: 12pt;
+}
+
+dt {
+	font-weight: bold;
+}
+
+h1, h2, h3, h4 {
+    text-shadow: rgba(64, 64, 64, 0.496094) 4px 3px 2px;
+}
+
+.details {
+    margin-left:250px;
+    margin-top:20px;
+    color:blue;
+    text-decoration:underline;
+    cursor:pointer;
+}
+
+.stest {
+    margin:30px;
+    padding:30px;
+    border:double;
+}
+
