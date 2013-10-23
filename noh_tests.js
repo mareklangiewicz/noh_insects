@@ -4,7 +4,8 @@
  * @author marek.langiewicz@gmail.com (Marek Langiewicz)
  * @fileoverview
  * This file contains NOH library tests (written using NOH library itself)
- * You have to init NOH library with option: pollute:true first, to use code from this file.
+ * You have to init NOH library with option: pollute:true, to use code from this file.
+ * We use the {@link http://alexgorbatchev.com/SyntaxHighlighter/|SyntaxHighlighter} to show some source code on the page.
  */                                        
 
 
@@ -15,8 +16,7 @@
  * @param {...noh.AttrsAndNodes} as always..
  */
 function tdiv(var_args) {
-    var an = noh.organize(arguments);
-    return div({style:"margin: 25px; padding:15px; border: double"}, an.attrs, an.nodes); //TODO: move styles to css file
+  return div({"class":"noh stest"}, arguments);
 }
 
 
@@ -34,12 +34,14 @@ noh.STests;
  * @return {noh.Element} Pretty result of running given test.
  */
 function runstest(f) {
-    var node = f();
-    return ul({"class":"stest"},
-        li(h4("Source code:"), div({"class":"stest"}, noh.srccode(f))),
-        li(h4("Result:"), div({"class":"stest"}, node)),
-        li(h4("Result source code (html):"), div({"class":"stest"}, noh.syntaxhl("html", node.dom().outerHTML || new XMLSerializer().serializeToString(node.dom()))))
-    );
+  var node = f();
+  return tdiv(
+    ul(
+      li(h4("Source code:"), tdiv(noh.srccode(f))),
+      li(h4("Result:"), tdiv(node)),
+      li(h4("Result source code (html):"), tdiv(noh.syntaxhl("html", node.dom().outerHTML || new XMLSerializer().serializeToString(node.dom()))))
+    )
+  );
 }
 
 
@@ -104,49 +106,49 @@ tests.h16_hack = function() {
 
 
 tests.srccode = function() {
-    return noh.srccode(tests.srccode);
+  return noh.srccode(tests.srccode);
 };
 
 
 tests.oneof = function() {
-    var oneof = noh.oneof(
-        div({style:"font-style: italic; color: green; font-size: xx-large"}, "BLABLA"),
-        div({style:"color: blue; font-size: xx-large"}, "BLEBLE", br(), "BLUBLU"),
-        div({style:"color: red; font-size: xx-large"}, "BLIBLI", br(), br(), "BLZBLZ")
-    );
-    oneof.select(0);
-    var style = {style:"color: blue; padding: 5px"};
-    var next = a(style, "oneof.next()");
-    var prev = a(style, "oneof.prev()");
-    var select1 = a(style, "oneof.select(1)");
-    var select_1 = a(style, "oneof.select(-1)");
-    $(next.dom()).click(function() {oneof.next()});
-    $(prev.dom()).click(function() {oneof.prev()});
-    $(select1.dom()).click(function() {oneof.select(1)});
-    $(select_1.dom()).click(function() {oneof.select(-1)});
-    return div(
-        next,
-        prev,
-        select1,
-        select_1,
-        noh.table1r({style:"border: 6px ridge green"},
-            td(oneof)
-        )
-    );
+  var oneof = noh.oneof(
+    div({style:"font-style: italic; color: green; font-size: xx-large"}, "BLABLA"),
+    div({style:"color: blue; font-size: xx-large"}, "BLEBLE", br(), "BLUBLU"),
+    div({style:"color: red; font-size: xx-large"}, "BLIBLI", br(), br(), "BLZBLZ")
+  );
+  oneof.select(0);
+  var style = {"class":"noh link", style:"padding: 5px"};
+  var next = a(style, "oneof.next()");
+  var prev = a(style, "oneof.prev()");
+  var select1 = a(style, "oneof.select(1)");
+  var select_1 = a(style, "oneof.select(-1)");
+  $(next.dom()).click(function() {oneof.next()});
+  $(prev.dom()).click(function() {oneof.prev()});
+  $(select1.dom()).click(function() {oneof.select(1)});
+  $(select_1.dom()).click(function() {oneof.select(-1)});
+  return div(
+    next,
+    prev,
+    select1,
+    select_1,
+    noh.table1r({style:"border: 6px ridge green"},
+      td(oneof)
+    )
+  );
 };
 
 
 tests.details = function() {
-    var bigstyle = {style:"color: brown; font-size: x-large"};
-    return div(
-        span(bigstyle, "BASIC INFO"),
-        noh.details(
-            div(
-              div(bigstyle, "bjkalb DETAILS"),
-              div(bigstyle, "fjdsklfsd   DETAILS"),
-              div("fjdsklf jksfl dsjlf djksdfl DETAILS")
-            )
-        )
-    );
+  var bigstyle = {style:"color: brown; font-size: x-large"};
+  return div(
+    span(bigstyle, "BASIC INFO"),
+    noh.details(
+      div(
+        div(bigstyle, "bjkalb DETAILS"),
+        div(bigstyle, "fjdsklfsd   DETAILS"),
+        div("fjdsklf jksfl dsjlf djksdfl DETAILS")
+      )
+    )
+  );
 };
 

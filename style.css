@@ -1,27 +1,28 @@
-body {
-	font-family: "Verdana";
-	font-size: 12pt;
-}
+// [ vim: set tabstop=2 shiftwidth=2 expandtab : ] 
 
-dt {
-	font-weight: bold;
+body {
+  font-family: "Verdana";
+  font-size: 12pt;
 }
 
 h1, h2, h3, h4 {
-    text-shadow: rgba(64, 64, 64, 0.496094) 4px 3px 2px;
+  text-shadow: rgba(64, 64, 64, 0.496094) 4px 3px 2px;
 }
 
-.details {
-    margin-left:250px;
-    margin-top:20px;
-    color:blue;
-    text-decoration:underline;
-    cursor:pointer;
+.noh.link {
+  color:blue;
+  text-decoration:underline;
+  cursor:pointer;
 }
 
-.stest {
-    margin:30px;
-    padding:30px;
-    border:double;
+.noh.details {
+  margin-left:250px;
+  margin-top:20px;
+}
+
+.noh.stest {
+  margin:30px;
+  padding:30px;
+  border:double;
 }
 

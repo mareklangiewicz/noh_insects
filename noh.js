@@ -23,6 +23,7 @@
  * NOH library depends on jQuery. TODO: Limit jQuery usage for NOH to be able to work with SVG or other elements (not only html)
  * @see http://stackoverflow.com/questions/3642035/jquerys-append-not-working-with-svg-element
  * </p>
+ * @licence Released under the MIT license.
  */
 
 /*
@@ -514,7 +515,7 @@ noh.tablebar = function(var_args) {
     var cells = [];
     for(var x = 0; x < an.children.length; ++x)
         cells.push(j.td(an.nodes[x]));
-    return noh.table1r({"class":"bar"}, an.attrs, cells);
+    return noh.table1r({"class":"noh bar"}, an.attrs, cells);
 };
 // TODO: better bars: bar(horizontal/vertical, ...); hbar = bar(horizontal, ...); vbar = ... And no tables! (but css)
 
@@ -666,8 +667,8 @@ noh.oneof = function(var_args) {
  * @extends {noh.OneOf}
  */
 noh.Details = function(content, opt_show, opt_hide) {
-  var show = opt_show || noh.a({"class": "show details"}, "Show more details");
-  var hide = opt_hide || noh.a({"class": "hide details"}, "Hide details");
+  var show = opt_show || noh.a({"class": "noh link show details"}, "Show more details");
+  var hide = opt_hide || noh.a({"class": "noh link hide details"}, "Hide details");
 
   noh.OneOf.call(this,
     noh.div(show),
@@ -686,8 +687,8 @@ noh.Details.prototype = new noh.OneOf();
 /**
  * TODO: description
  * @param {noh.Node} content The details content that is shown or hidden.
- * @param {noh.Element} opt_show The "Show more details" link element. Default is an "a" element with css classes: "show" and "details".
- * @param {noh.Element} opt_hide The "Hide details" link element. Default is an "a" element with css classes: "hide" and "details".
+ * @param {noh.Element} opt_show The "Show more details" link element. Default is an "a" element with css classes: "noh, "show" and "details".
+ * @param {noh.Element} opt_hide The "Hide details" link element. Default is an "a" element with css classes: "noh", "hide" and "details".
  */
 noh.details = function(content, opt_show, opt_hide) { return new noh.Details(content, opt_show, opt_hide); };
 
@@ -715,7 +716,7 @@ noh.ISelectable.prototype.toggle = function() {};
 
 /** 
  * This Element is prepared to be used as a menu item. It can be selected or not.
- * It will have css classes: "menu" and "item", (and "selected" if it is in selected state).
+ * It will have css classes: "noh", "menu" and "item", (and "selected" if it is in selected state).
  * It changes its state when clicked (selected/not selected) (by calling the toggle method)
  * The toggle method can be overriden to add some functionality when the state is changing.
  * @param {noh.Node|string} content Usually it is just a text to display, but it can be any noh.Node.
@@ -724,7 +725,7 @@ noh.ISelectable.prototype.toggle = function() {};
  * @implements {noh.ISelectable}
  */
 noh.MenuItem = function(content) {
-  noh.Element.call(this, "div", {"class": "menu item"}, content);
+  noh.Element.call(this, "div", {"class": "noh menu item"}, content);
   var this_ = this;
   $(this.dom()).click(function() { this_.toggle(); return false; });
 }
