@@ -657,6 +657,102 @@ noh.oneof = function(var_args) {
 };
 
 
+
+
+
+
+
+
+
+
+/**
+ * Fancy version of element that displays one of his children at a time (or none).
+ * (the children are placed one below another and then their visibility is changed respectively)
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
+ * @see noh.organize for more detailed explanation about attributes and children parameters
+ * @constructor
+ * @extends {noh.Element}
+ * @implements {noh.IOneOf}
+ */
+noh.FancyOneOf = function(var_args) {
+  var an = noh.organize(arguments);
+  for(var i = 0; i < an.nodes.length; ++i) {
+    an.nodes[i] = noh.div({class: 'noh oneof element'}, an.nodes[i]);
+    an.nodes[i].oneOfIdx_ = i;
+  }
+  noh.Element.call(this, "div", {class: 'noh oneof'}, an.attrs, an.nodes);
+
+  this.selected_ = -1;
+};
+
+noh.FancyOneOf.prototype = new noh.Element("div");
+
+/**
+ * @return {number}
+ */
+noh.FancyOneOf.prototype.selected = function() { return this.selected_; };
+
+/**
+ * Displays given child and hide all the others.
+ * @param {(number|Node)} idx Number of child to display or the child Node itself.
+ * (-1 or null means - do not display any child)
+ */
+noh.FancyOneOf.prototype.select = function(idx) {
+  if(idx instanceof noh.Node)
+    idx = idx.oneOfIdx_;
+  else if(idx === null)
+    idx = -1;
+  var l = this.length;
+  if((idx < -1) || (idx >= l))
+    idx = -1;
+
+  if(this.selected_ != -1)
+    $(this[this.selected_].dom()).removeClass("selected");
+
+  if(idx != -1)
+    $(this[idx].dom()).addClass("selected");
+
+  this.selected_ = idx;
+};
+
+/** @private */
+noh.FancyOneOf.prototype.selectModulo_ = function(idx) {
+  this.select(idx < 0 ? this.length-1 : idx % this.length);
+};
+
+/**
+ * Changes the displayed child to the next one.
+ */
+noh.FancyOneOf.prototype.next = function() { this.selectModulo_(this.selected_+1); };
+
+/**
+ * Changes the displayed child to the previous one.
+ */
+noh.FancyOneOf.prototype.prev = function() { this.selectModulo_(this.selected_-1); };
+
+
+/**
+ * TODO: description
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
+ * @return {!noh.OneOf}
+ */
+noh.fancyoneof = function(var_args) {
+  return new noh.FancyOneOf(arguments);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * This Element displays the "Show more details" link, and display in content only after user clicks it.
  * Then the user can hide the content again by clicking on the "Hide details" link.

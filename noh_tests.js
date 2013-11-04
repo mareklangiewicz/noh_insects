@@ -111,7 +111,7 @@ tests.srccode = function() {
 
 
 tests.oneof = function() {
-  var oneof = noh.oneof(
+  var oneof = noh.fancyoneof(
     div({style:"font-style: italic; color: green; font-size: xx-large"}, "BLABLA"),
     div({style:"color: blue; font-size: xx-large"}, "BLEBLE", br(), "BLUBLU"),
     div({style:"color: red; font-size: xx-large"}, "BLIBLI", br(), br(), "BLZBLZ")
