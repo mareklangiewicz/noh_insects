@@ -59,7 +59,7 @@ noh = {};
 
 
 
-/** @typedef {{hide:number|string|undefined, show:number|string|undefined, pollute:boolean|undefined}} */
+/** @typedef {{smooth:string|undefined, pollute:boolean|undefined}} */
 noh.Options;
 
 /** @typedef {Object.<string, string>} */
@@ -125,10 +125,6 @@ noh.ElementError.prototype = new noh.NodeError("Element error");
  * @type {noh.Options}
  */
 noh.options = { 
-  /** how many milisecond will the showing animation last */
-  hide: 0,
-  /** how many milisecond will the hiding animation last */
-  show: 0,
   /** will we pollute global namespace with noh functions; if false (default), everything will be available only under the {@link:noh} namespace */
   pollute: false
 };
@@ -351,23 +347,18 @@ noh.Node = function() {
   this.length = 0;
 
   /**
-   * @private
    * @type {noh.Node}
    */
-  this.parent_ = null;
+  this.parent = null;
 
   /**
-   * @private
    * @type {noh.Node}
-   * the dom_ property have to be overriden in derivatives!
+   * the dom property have to be overriden in derivatives!
    */
-  this.dom_ = null;
-};
+  this.dom = null;
 
-/**
- * @return {noh.Node}
- */
-noh.Node.prototype.parent = function() { return this.parent_; };
+  this.$ = null;
+};
 
 
 /**
@@ -375,8 +366,8 @@ noh.Node.prototype.parent = function() { return this.parent_; };
  * @param {noh.Node} node A node to add as a last child of our node.
  */
 noh.Node.prototype.add = function(node) {
-  node.attachToDOM(this.dom());
-  node.parent_ = this;
+  node.attachToDOM(this.dom);
+  node.parent = this;
   Array.prototype.push.call(this, node);
 };
 
@@ -385,8 +376,8 @@ noh.Node.prototype.add = function(node) {
  */
 noh.Node.prototype.rem = function() {
   var node = Array.prototype.pop.call(this);
-  node.parent_ = null;
-  node.detachFromDOM(this.dom());
+  node.parent = null;
+  node.detachFromDOM(this.dom);
 };
 
 
@@ -398,17 +389,13 @@ noh.Node.prototype.rem = function() {
  */
 noh.Node.prototype.splice = function() { throw new NotSupportedError(); };
 
-/**
- * @return {!Node} Returns a DOM Node (like HTMLElement or Text etc..) associaded with this noh.Node.
- */
-noh.Node.prototype.dom = function() { return this.dom_ };
 
 /**
  * Attaches a node to given DOM root element
  * @param {!Node} root
  */
 noh.Node.prototype.attachToDOM = function(root) {
-  root.appendChild(this.dom());
+  root.appendChild(this.dom);
 };
 
 /**
@@ -416,7 +403,7 @@ noh.Node.prototype.attachToDOM = function(root) {
  * @param {!Node} root
  */
 noh.Node.prototype.detachFromDOM = function(root) {
-  root.removeChild(this.dom());
+  root.removeChild(this.dom);
 };
 
 
@@ -429,7 +416,8 @@ noh.Node.prototype.detachFromDOM = function(root) {
 noh.Text = function(text) {
   this.text = text;
   noh.Node.call(this);
-  this.dom_ = document.createTextNode(text);
+  this.dom = document.createTextNode(text);
+  this.$ = $(this.dom);
 };
 
 noh.Text.prototype = new noh.Node();
@@ -449,7 +437,8 @@ noh.Element = function(tag, var_args) {
 
   noh.Node.call(this);
     
-  this.dom_ = document.createElement(tag);
+  this.dom = document.createElement(tag);
+  this.$ = $(this.dom);
 
   var an = noh.organize(arguments, 1);
 
@@ -470,9 +459,9 @@ noh.Element.prototype = new noh.Node();
  */
 noh.Element.prototype.attr = function(name, opt_value) {
   if(opt_value === undefined)
-    return $(this.dom()).attr(name);
+    return this.$.attr(name);
   else
-    $(this.dom()).attr(name, opt_value);
+    this.$.attr(name, opt_value);
 };
 
 
@@ -554,6 +543,82 @@ noh.srccode = function(afunction) {
 
 
 /**
+ * An object that can show or hide it's content by rolling it down (hidden->visible) or up (visible->hidden)
+ * @interface
+ */
+noh.IBlind = function() {};
+
+/**
+ * Returns if the content is visible (down).
+ * @return {boolean}
+ */
+noh.IBlind.prototype.down = function() {};
+
+/**
+ * Rolls the blind down (to show it content) or up (hiding the content)
+ * @param {boolean} down
+ */
+noh.IBlind.prototype.roll = function(down) {};
+
+
+
+/**
+ * An object that can show or hide it's content by rolling it down (hidden->visible) or up (visible->hidden)
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
+ * @see noh.organize for more detailed explanation about attributes and children parameters
+ * @constructor
+ * @extends {noh.Element}
+ * @implements {noh.IBlind}
+ * TODO: it can change its size smoothly so it should be inside some absolutely positioned block,
+ * to avoid forcing browser to relayout the whole page too much; TODO: warnings in documentation
+ */
+noh.Blind = function(var_args) {
+  var smooth = noh.options.smooth ? ' ' + noh.options.smooth : '';
+  var content = noh.div({class:'noh blind content smooth' + smooth}, arguments);
+  noh.Element.call(this, "div", {class: 'noh blind smooth' + smooth}, content);
+  this.content_ = content;
+  this.roll(false);
+  var this_ = this;
+  this.$.show(function() {this_.roll(this_.down());});
+};
+
+noh.Blind.prototype = new noh.Element("div");
+
+/**
+ * Returns if the content is visible (down).
+ * @return {boolean}
+ */
+noh.Blind.prototype.down = function() { return this.down_; };
+
+/**
+ * Rolls the blind down (to show it content) or up (hiding the content)
+ * @param {boolean} down
+ */
+noh.Blind.prototype.roll = function(down) {
+  var $blind = this.$;
+  var $content = $(this.content_.dom);
+  var w = $content.width();
+  var h = $content.height();
+  $content.css("clip", "rect(0px " + w + "px " + (down ? h : 0) + "px 0px");
+  $content.css("opacity", down ? '1' : '0');
+  $blind.width(w);
+  $blind.height(down ? h : 0);
+  this.down_ = down;
+};
+
+/**
+ * TODO: description
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
+ * @return {!noh.Blind}
+ */
+noh.blind = function(var_args) {
+  return new noh.Blind(arguments);
+};
+
+
+
+
+/**
  * An object that contains a collection of elements and always one of them can be "selected" (or none)
  * @interface
  */
@@ -574,26 +639,28 @@ noh.IOneOf.prototype.select = function(idx) {};
 
 
 
+
 /**
  * Element that displays one of his children at a time (or none).
  * (the children are placed one below another and then their visibility is changed respectively)
- * TODO: check if the rule: "one below another" is always true
  * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
  * @see noh.organize for more detailed explanation about attributes and children parameters
  * @constructor
  * @extends {noh.Element}
  * @implements {noh.IOneOf}
+ * TODO: it can change its size smoothly so it should be inside some absolutely positioned block,
+ * to avoid forcing browser to relayout the whole page too much; TODO: warnings in documentation
  */
 noh.OneOf = function(var_args) {
   var an = noh.organize(arguments);
   for(var i = 0; i < an.nodes.length; ++i) {
-    an.nodes[i] = noh.div(an.nodes[i]);
-    $(an.nodes[i].dom()).css('display', 'none');
-    an.nodes[i].oneOfIdx_ = i;
+    var blind = noh.blind(an.nodes[i]);
+    an.nodes[i] = blind;
+    blind.oneOfIdx_ = i;
   }
-  noh.Element.call(this, "div", an.attrs, an.nodes);
+  noh.Element.call(this, "div", {class: 'noh oneof'}, an.attrs, an.nodes);
 
-  this.selected_ = -1;
+  this.selected_ = -1; 
 };
 
 noh.OneOf.prototype = new noh.Element("div");
@@ -604,9 +671,9 @@ noh.OneOf.prototype = new noh.Element("div");
 noh.OneOf.prototype.selected = function() { return this.selected_; };
 
 /**
- * Displays given child and hide all the others.
+ * Displays given child and hides all the others.
  * @param {(number|Node)} idx Number of child to display or the child Node itself.
- * (-1 or null means - do not display any child)
+ * (-1 or null means: do not display any child)
  */
 noh.OneOf.prototype.select = function(idx) {
   if(idx instanceof noh.Node)
@@ -616,19 +683,14 @@ noh.OneOf.prototype.select = function(idx) {
   var l = this.length;
   if((idx < -1) || (idx >= l))
     idx = -1;
+
+  if(this.selected_ != -1)
+    this[this.selected_].roll(false);
+
+  if(idx != -1)
+    this[idx].roll(true);
+
   this.selected_ = idx;
-  for(var i = 0; i < l; ++i)
-    if(noh.options.hide)
-      $(this[i].dom()).slideUp(noh.options.hide);
-    else
-      $(this[i].dom()).hide(); // for noh.options.hide == 0 the above didn't work sometimes.. TODO: check again
-          //http://stackoverflow.com/questions/4540639/jquery-hide-function-why-does-speed-0-still-try-to-animate
-  if(idx != -1) {
-    if(noh.options.show)
-      $(this[idx].dom()).slideDown(noh.options.show);
-    else
-      $(this[idx].dom()).show(); //TODO: as above
-  }
 };
 
 /** @private */
@@ -639,12 +701,12 @@ noh.OneOf.prototype.selectModulo_ = function(idx) {
 /**
  * Changes the displayed child to the next one.
  */
-noh.OneOf.prototype.next = function() { this.selectModulo_(this.selected_+1); };
+noh.OneOf.prototype.next = function() { this.selectModulo_(this.selected() + 1); };
 
 /**
  * Changes the displayed child to the previous one.
  */
-noh.OneOf.prototype.prev = function() { this.selectModulo_(this.selected_-1); };
+noh.OneOf.prototype.prev = function() { this.selectModulo_(this.selected() - 1); };
 
 
 /**
@@ -658,135 +720,19 @@ noh.oneof = function(var_args) {
 
 
 
-
-
-
-
-
-
-
 /**
- * Fancy version of element that displays one of his children at a time (or none).
- * (the children are placed one below another and then their visibility is changed respectively)
+ * This Element displays the "details..." button, and displays the content only after user clicks it.
+ * Then the user can hide the content again by clicking the button again.
  * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
- * @see noh.organize for more detailed explanation about attributes and children parameters
- * @constructor
- * @extends {noh.Element}
- * @implements {noh.IOneOf}
+ * @return {noh.Element} 
  */
-noh.FancyOneOf = function(var_args) {
-  var an = noh.organize(arguments);
-  for(var i = 0; i < an.nodes.length; ++i) {
-    an.nodes[i] = noh.div({class: 'noh oneof element'}, an.nodes[i]);
-    an.nodes[i].oneOfIdx_ = i;
-  }
-  noh.Element.call(this, "div", {class: 'noh oneof'}, an.attrs, an.nodes);
-
-  this.selected_ = -1;
+noh.details = function(var_args) {
+  var content = noh.div({class: "noh details content"}, arguments);
+  var blind = noh.blind(content);
+  var button = noh.button({class: "noh details button", title: "show/hide details"}, "details...");
+  button.$.click(function() {blind.roll(!blind.down());});
+  return noh.div({class: "noh details"}, noh.div(button), noh.div(blind));
 };
-
-noh.FancyOneOf.prototype = new noh.Element("div");
-
-/**
- * @return {number}
- */
-noh.FancyOneOf.prototype.selected = function() { return this.selected_; };
-
-/**
- * Displays given child and hide all the others.
- * @param {(number|Node)} idx Number of child to display or the child Node itself.
- * (-1 or null means - do not display any child)
- */
-noh.FancyOneOf.prototype.select = function(idx) {
-  if(idx instanceof noh.Node)
-    idx = idx.oneOfIdx_;
-  else if(idx === null)
-    idx = -1;
-  var l = this.length;
-  if((idx < -1) || (idx >= l))
-    idx = -1;
-
-  if(this.selected_ != -1)
-    $(this[this.selected_].dom()).removeClass("selected");
-
-  if(idx != -1)
-    $(this[idx].dom()).addClass("selected");
-
-  this.selected_ = idx;
-};
-
-/** @private */
-noh.FancyOneOf.prototype.selectModulo_ = function(idx) {
-  this.select(idx < 0 ? this.length-1 : idx % this.length);
-};
-
-/**
- * Changes the displayed child to the next one.
- */
-noh.FancyOneOf.prototype.next = function() { this.selectModulo_(this.selected_+1); };
-
-/**
- * Changes the displayed child to the previous one.
- */
-noh.FancyOneOf.prototype.prev = function() { this.selectModulo_(this.selected_-1); };
-
-
-/**
- * TODO: description
- * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
- * @return {!noh.OneOf}
- */
-noh.fancyoneof = function(var_args) {
-  return new noh.FancyOneOf(arguments);
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * This Element displays the "Show more details" link, and display in content only after user clicks it.
- * Then the user can hide the content again by clicking on the "Hide details" link.
- * @param {noh.Node} content The details content that is shown or hidden.
- * @param {noh.Element} opt_show The "Show more details" link element. Default is an "a" element with css classes: "show" and "details".
- * @param {noh.Element} opt_hide The "Hide details" link element. Default is an "a" element with css classes: "hide" and "details".
- * @constructor
- * @extends {noh.OneOf}
- */
-noh.Details = function(content, opt_show, opt_hide) {
-  var show = opt_show || noh.a({"class": "noh link show details"}, "Show more details");
-  var hide = opt_hide || noh.a({"class": "noh link hide details"}, "Hide details");
-
-  noh.OneOf.call(this,
-    noh.div(show),
-    noh.div(noh.div(content), noh.div(hide))
-  );
-  this.select(0);
-
-  var this_ = this;
-
-  $(show.dom()).click(function () { this_.select(1); });
-  $(hide.dom()).click(function () { this_.select(0); });
-};
-
-noh.Details.prototype = new noh.OneOf();
-
-/**
- * TODO: description
- * @param {noh.Node} content The details content that is shown or hidden.
- * @param {noh.Element} opt_show The "Show more details" link element. Default is an "a" element with css classes: "noh, "show" and "details".
- * @param {noh.Element} opt_hide The "Hide details" link element. Default is an "a" element with css classes: "noh", "hide" and "details".
- */
-noh.details = function(content, opt_show, opt_hide) { return new noh.Details(content, opt_show, opt_hide); };
 
 
 
@@ -823,7 +769,7 @@ noh.ISelectable.prototype.toggle = function() {};
 noh.MenuItem = function(content) {
   noh.Element.call(this, "div", {"class": "noh menu item"}, content);
   var this_ = this;
-  $(this.dom()).click(function() { this_.toggle(); return false; });
+  this.$.click(function() { this_.toggle(); return false; });
 }
 
 noh.MenuItem.prototype = new noh.Element("div");
@@ -832,9 +778,9 @@ noh.MenuItem.prototype = new noh.Element("div");
  * This method should be overriden if we want to add some new fuctionality when the state is changing;
  * but you should call the original toggle anyway
  */
-noh.MenuItem.prototype.toggle = function() { $(this.dom()).toggleClass("selected"); };
+noh.MenuItem.prototype.toggle = function() { this.$.toggleClass("selected"); };
 
-noh.MenuItem.prototype.selected = function() { return $(this.dom()).hasClass("selected"); };
+noh.MenuItem.prototype.selected = function() { return this.$.hasClass("selected"); };
 
 /**
  * @param {noh.Node|string} content Usually it is just a text to display, but it can be any noh.Node.

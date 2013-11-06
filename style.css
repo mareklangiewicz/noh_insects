@@ -1,23 +1,51 @@
 // [ vim: set tabstop=2 shiftwidth=2 expandtab : ] 
 
-body {
-  font-family: "Verdana";
-  font-size: 12pt;
+.noh.smooth {
+  transition: all 0.6s;
 }
 
-h1, h2, h3, h4 {
-  text-shadow: rgba(64, 64, 64, 0.496094) 4px 3px 2px;
+.noh.smooth.nope {
+  transition: all 0s;
 }
+
+.noh.smooth.fast {
+  transition: all 0.2s;
+}
+
+.noh.smooth.slow {
+  transition: all 1s;
+}
+
+.noh.blind {
+  position: relative;
+}
+
+.noh.blind.content {
+  position: absolute;
+}
+
+.noh.oneof {
+  position: relative;
+}
+
+.noh.oneof.element {
+  opacity: 0;
+}
+
+.noh.oneof.element.selected {
+  opacity: 1;
+}
+
+.noh.details.button {
+  font-size: x-small;
+}
+
+
 
 .noh.link {
   color:blue;
   text-decoration:underline;
   cursor:pointer;
-}
-
-.noh.details {
-  margin-left:250px;
-  margin-top:20px;
 }
 
 .noh.stest {
@@ -26,18 +54,19 @@ h1, h2, h3, h4 {
   border:double;
 }
 
-.noh.oneof {
-  position: relative;
+body {
+  font-family: "Verdana";
+  font-size: 12pt;
 }
 
-.noh.oneof.element {
-  max-height: 0px;
-  opacity: 0;
+h1, h2, h3, h4 {
+  text-shadow: rgba(64, 64, 64, 0.496094) 4px 3px 2px;
   transition: all 0.4s;
 }
 
-.noh.oneof.element.selected {
-  max-height: 300px;
-  opacity: 1;
+h1:hover, h2:hover, h3:hover, h4:hover {
+  text-shadow: rgba(64, 64, 64, 0.496094) 8px 6px 4px;
 }
+
+
 

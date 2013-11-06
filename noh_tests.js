@@ -39,7 +39,7 @@ function runstest(f) {
     ul(
       li(h4("Source code:"), tdiv(noh.srccode(f))),
       li(h4("Result:"), tdiv(node)),
-      li(h4("Result source code (html):"), tdiv(noh.syntaxhl("html", node.dom().outerHTML || new XMLSerializer().serializeToString(node.dom()))))
+      li(h4("Result source code (html):"), tdiv(noh.syntaxhl("html", node.dom.outerHTML || new XMLSerializer().serializeToString(node.dom))))
     )
   );
 }
@@ -55,7 +55,7 @@ function runstests(stests) {
   for(var t in stests)
     testsres.push(dt(h3(t)), dd(runstest(stests[t])));
   var runtests = dl(testsres);
-  $(runtests.dom()).find("ul, li").css("list-style", "disc inside"); //TODO: move styles to css file
+  runtests.$.find("ul, li").css("list-style", "disc inside"); //TODO: move styles to css file
   return runtests;
 }
 
@@ -110,8 +110,30 @@ tests.srccode = function() {
 };
 
 
+tests.blind = function() {
+  var blind = noh.blind(
+    div({style:"color: blue; font-size: xx-large"}, "blind BLEBLE", br(), "BLUBLU")
+  );
+  var style = {"class":"noh link", style:"padding: 5px"};
+  var rolldown = a(style, "blind.roll(true)");
+  var rollup = a(style, "blind.roll(false)");
+  var down = a(style, "alert(blind.down())");
+  rolldown.$.click(function() {blind.roll(true)});
+  rollup.$.click(function() {blind.roll(false)});
+  down.$.click(function() {alert(blind.down())});
+  return div(
+    rolldown,
+    rollup,
+    down,
+    noh.table1r({style:"border: 6px ridge green"},
+      td(blind)
+    )
+  );
+};
+
+
 tests.oneof = function() {
-  var oneof = noh.fancyoneof(
+  var oneof = noh.oneof(
     div({style:"font-style: italic; color: green; font-size: xx-large"}, "BLABLA"),
     div({style:"color: blue; font-size: xx-large"}, "BLEBLE", br(), "BLUBLU"),
     div({style:"color: red; font-size: xx-large"}, "BLIBLI", br(), br(), "BLZBLZ")
@@ -122,10 +144,10 @@ tests.oneof = function() {
   var prev = a(style, "oneof.prev()");
   var select1 = a(style, "oneof.select(1)");
   var select_1 = a(style, "oneof.select(-1)");
-  $(next.dom()).click(function() {oneof.next()});
-  $(prev.dom()).click(function() {oneof.prev()});
-  $(select1.dom()).click(function() {oneof.select(1)});
-  $(select_1.dom()).click(function() {oneof.select(-1)});
+  next.$.click(function() {oneof.next()});
+  prev.$.click(function() {oneof.prev()});
+  select1.$.click(function() {oneof.select(1)});
+  select_1.$.click(function() {oneof.select(-1)});
   return div(
     next,
     prev,
@@ -137,9 +159,8 @@ tests.oneof = function() {
   );
 };
 
-
 tests.details = function() {
-  var bigstyle = {style:"color: brown; font-size: x-large"};
+  var bigstyle = {style:"color: brown; font-size: x-large; width: 400px;"};
   return div(
     span(bigstyle, "BASIC INFO"),
     noh.details(
