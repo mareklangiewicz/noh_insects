@@ -1,19 +1,10 @@
-// [ vim: set tabstop=2 shiftwidth=2 expandtab : ] 
+/* [ vim: set tabstop=2 shiftwidth=2 expandtab : ] */
+
 
 .noh.smooth {
   transition: all 0.6s;
-}
-
-.noh.smooth.nope {
-  transition: all 0s;
-}
-
-.noh.smooth.fast {
-  transition: all 0.2s;
-}
-
-.noh.smooth.slow {
-  transition: all 1s;
+/*  transition: all 1s; */
+/*  transition: all 0s; */
 }
 
 .noh.blind {
@@ -40,19 +31,57 @@
   font-size: x-small;
 }
 
+.noh.reel {
+  position: relative;
+}
 
+.noh.reel.element {
+  position: absolute;
+}
+
+.noh.reel.element.visible {
+  opacity: 1;
+  z-index: 1;
+}
+
+.noh.reel.element.hidden {
+  opacity: 0;
+  z-index: -1;
+}
+
+.fancy .noh.reel.element {
+  opacity: 0.4;
+}
+
+.fancy .noh.reel.element.visible {
+  left: 20px;
+}
+
+.fancy .noh.reel.element.hidden {
+  opacity: 0.1;
+  left: -20px;
+}
+
+.fancy .noh.reel.element.selected {
+  opacity: 1;
+  z-index: 2;
+}
 
 .noh.link {
-  color:blue;
-  text-decoration:underline;
-  cursor:pointer;
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .noh.stest {
-  margin:30px;
-  padding:30px;
-  border:double;
+  margin: 30px;
+  padding: 30px;
+  border: double;
 }
+
+
+
+
 
 body {
   font-family: "Verdana";

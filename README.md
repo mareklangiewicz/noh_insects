@@ -8,7 +8,7 @@ It allows to create the html documents dynamically in pure JavaScript (with almo
 It contains a kind of a wrappers to DOM hierarchy.
 We have a function for every html element like: {@code table, tr, td, div, span} etc..;
 but also we have functions that constructs many specialized and more complex elements that have some dynamic behaviour
-implemented (like {@code menu, blind, oneof, bar, logger}, and more).
+implemented (like `menu`, `blind`, `oneof`, `bar`, `logger`, and more).
 User can easely use those basic and more advanced elements as a blocks to construct more complex elements.
 
 Please check the files: `noh_example.js` (and `example.html`) for full (but simple) working example.

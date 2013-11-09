@@ -69,21 +69,7 @@ function noh_tests() {
 
 
 
-$(document).ready(function(){
-  //TODO: move styes to css file (these too?)
-  $("h1, h2, dt").css("color", "black");
-  $("h2").css("font-size", "18px");
-  $("h1, h2, dt").css("font-weight", "bold");
-  $("h1, h2, dt").css("margin", "5px");
-  $("dd").css("margin", "15px");
-});
-
-
-
-
 var tests = {};
-
-
 
 
 tests.h16 = function() {
@@ -172,4 +158,73 @@ tests.details = function() {
     )
   );
 };
+
+function gen_test_reel(reel) {
+  var style = {"class":"noh link", style:"padding: 5px"};
+  var rotate1 = a(style, "reel.rotate(1)");
+  var rotate2 = a(style, "reel.rotate(2)");
+  var rotate3 = a(style, "reel.rotate(3)");
+  var rotatem1 = a(style, "reel.rotate(-1)");
+  var rotatem2 = a(style, "reel.rotate(-2)");
+  var rotatem3 = a(style, "reel.rotate(-3)");
+  var addfancy = a(style, 'reel.addclass("fancy")');
+  var remfancy = a(style, 'reel.remclass("fancy")');
+  var spin20 = a(style, 'reel.spin(20)');
+  var spinback = a(style, 'reel.spin(-12, -4, 100)');
+  rotate1.$.click(function() {reel.rotate(1)});
+  rotate2.$.click(function() {reel.rotate(2)});
+  rotate3.$.click(function() {reel.rotate(3)});
+  rotatem1.$.click(function() {reel.rotate(-1)});
+  rotatem2.$.click(function() {reel.rotate(-2)});
+  rotatem3.$.click(function() {reel.rotate(-3)});
+  addfancy.$.click(function() {reel.addclass("fancy")});
+  remfancy.$.click(function() {reel.remclass("fancy")});
+  spin20.$.click(function() {reel.spin(20)});
+  spinback.$.click(function() {reel.spin(-12, -4, 100)});
+  return div(
+    rotate1,
+    rotate2,
+    rotate3,
+    rotatem1,
+    rotatem2,
+    rotatem3, br(),
+    addfancy,
+    remfancy,
+    spin20,
+    spinback,
+    div(noh.table1r(td({style:"border: 6px ridge green"}, reel)))
+  );
+}
+
+tests.reel1 = function() {
+  var bigstyle = {style:"padding: 5px; border: solid blue; color: black; font-size: large; width: 400px; background: wheat"};
+  var reel = noh.reel(5, "dynamic", "dynamic",
+    div(bigstyle, "BLABLA").css("background", "green"),
+    div(bigstyle, "BLABLA").css("background", "blue"),
+    div(bigstyle, "BLEBLE", br(), "BLUBLU").css("width", "500px"),
+    div(bigstyle, "BLEBLE", br(), "BLUBLU").css("width", "200px"),
+    div(bigstyle, "BLEBLE", br(), "BLUBLU").css("width", "220px"),
+    div(bigstyle, "BLIBLI", br(), "margin:10px", br(), "BLZBLZ").css("width", "270px").css("margin", "10px"),
+    div(bigstyle, "BLIBLI", br(), "margin:20px", br(), "BLZBLZ").css("width", "250px").css("margin", "20px"),
+    div(bigstyle, "BLIBLI", br(), br(), "BLZBLZ").css("width", "130px")
+  );
+  reel.select(2);
+  return gen_test_reel(reel);
+};
+
+
+
+tests.reel2 = function() {
+  var reelnr = function(min, max) {
+    var elements = [];
+    var style = {style:"margin: 15px; padding: 15px; border: solid black; color: black; font-size: large; width: 100; background: wheat"};
+    for(var i = min; i <=max; ++i)
+      elements.push(div(style, "" + i));
+    return noh.reel(3, 150, "automatic", elements).select(1).addclass("fancy");
+  };
+  var reel = reelnr(1,12);
+  return gen_test_reel(reel);
+};
+
+
 

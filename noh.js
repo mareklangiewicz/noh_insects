@@ -9,9 +9,9 @@
  * <p>
  * It allows to create the html documents dynamically in pure JavaScript (with almost no html code at all)
  * It contains a kind of a wrappers to DOM hierarchy.
- * We have a function for every html element like: {@code table, tr, td, div, span} etc..;
+ * We have a function for every html element like: {@linkcode table, tr, td, div, span} etc..;
  * but also we have functions that constructs many specialized and more complex elements that have some dynamic behaviour
- * implemented (like {@code menu, oneof, bar}, and more).
+ * implemented (like {@linkcode menu, oneof, bar, logger}, and more).
  * TODO: implement some srccode, some logger and some tester.
  * </p>
  * <p>
@@ -21,7 +21,7 @@
  * </p>
  * <p>
  * NOH library depends on jQuery. TODO: Limit jQuery usage for NOH to be able to work with SVG or other elements (not only html)
- * @see http://stackoverflow.com/questions/3642035/jquerys-append-not-working-with-svg-element
+ * {@linkcode http://stackoverflow.com/questions/3642035/jquerys-append-not-working-with-svg-element|stackoverflow}
  * </p>
  * @licence Released under the MIT license.
  */
@@ -59,7 +59,7 @@ noh = {};
 
 
 
-/** @typedef {{smooth:string|undefined, pollute:boolean|undefined}} */
+/** @typedef {{pollute:boolean|undefined}} */
 noh.Options;
 
 /** @typedef {Object.<string, string>} */
@@ -68,10 +68,8 @@ noh.Attrs;
 /** @typedef {Array.<noh.Node>} */
 noh.Nodes;
 
-/** @typedef {(noh.Attrs|noh.Node|string|Array.<noh.AttrsAndNodes>|undefined)} */
-noh.AttrsAndNodes;
-/** @typedef {(noh.Attrs|noh.Node|string|Array.<noh.AttrsAndNodes2>|Arguments.<AttrsAndNodes2>|undefined)} */
-noh.AttrsAndNodes2; // FIXME: Future version. We will try to enable it later (@see noh.organize2)
+/** @typedef {(noh.Attrs|noh.Node|string|Array.<noh.AttrsAndNodes>|Arguments.<AttrsAndNodes>|undefined)} */
+noh.AttrsAndNodes; 
 
 /** @typedef {{attrs: noh.Attrs, nodes:noh.Nodes}} */
 noh.RecAttrsAndNodes;
@@ -93,29 +91,6 @@ noh.NotImplementedError.prototype = new Error("Not implemented");
  */
 noh.NotSupportedError = function(opt_msg) { if(opt_msg) this.message = opt_msg; };
 noh.NotSupportedError.prototype = new noh.NotImplementedError("Operation not supported");
-
-
-/**
- * @param {string=} opt_msg
- * @constructor
- * @extends {Error}
- * TODO: do we need this now? kind of wired to duplicate Node hierarchy to Error hierarchy..
- */
-noh.NodeError = function(opt_msg) { if(opt_msg) this.message = opt_msg; };
-noh.NodeError.prototype = new Error("Node error");
-
-/**
- * @param {string=} opt_msg
- * @constructor
- * @extends {noh.NodeError}
- * TODO: do we need this now? kind of wired to duplicate Node hierarchy to Error hierarchy..
- */
-noh.ElementError = function(opt_msg) { if(opt_msg) this.message = opt_msg; };
-noh.ElementError.prototype = new noh.NodeError("Element error");
-
-
-
-
 
 
 
@@ -180,11 +155,9 @@ noh.init = function(opt_options) {
 };
 
 
-
-
 /**
  * This helper function is used to parse the arguments in a clever way.
- * We want to get an object representing the attributes of created Element (like {@code {href:"http://foo.com", "class":"some_css_class"..}})
+ * We want to get an object representing the attributes of created Element (like {@linkcode {href:"http://foo.com", "class":"some_css_class"..}})
  * and a list of children of new created element, where every child is a Node.
  * But we want the user to have the ability to provide this information in many different ways.
  * So this function have to guess for example:
@@ -192,48 +165,15 @@ noh.init = function(opt_options) {
  * <li> which arguments represents the Element attributes </li>
  * <li> which are not Nodes but simple strings and have to be wrapped in Text nodes </li>
  * <li> which are single children, and which is a whole list of children (All nested Array like objects are just flattened) </li>
- * <li> which we have to ignore (user can pass some undefined arguments and we will ignore them - not always the last ones) </li>
+ * <li> which we have to ignore (user can pass some undefined arguments and we will ignore them) </li>
  * </ul>
  * Pretty examples of using this flexibility should be presented in the main documentation: {@link index.html|NOH Library documentation}
- * @param {!Arguments.<noh.AttrsAndNodes>} args List of arguments parsed as an attributes and children Nodes. TODO: check this Arguments.<..> type..
- * @param {number=} opt_ignore Number of elements to ignore at the beginning of args list. (default is 0)
- * @param {noh.RecAttrsAndNodes=} opt_result A result object to be extended.
- * @return {noh.RecAttrsAndNodes} Attributes and children extracted from args.
- */
-noh.organize = function(args, opt_ignore, opt_result) {
-
-  var result = opt_result ? opt_result : {
-    attrs: {},
-    nodes: []
-  };
-
-  if(opt_ignore === undefined)
-    opt_ignore = 0;
-
-  for(var i = opt_ignore; i < args.length; ++i) {
-    if(args[i] instanceof noh.Node)
-      result.nodes.push(args[i]);
-    else if(typeof args[i] === "string")
-      result.nodes.push(noh.text(args[i]));
-    else if(noh.isArrayLike(args[i]))
-      noh.organize(args[i], 0, result);
-    else if(args[i] instanceof Object)
-      $.extend(result.attrs, args[i]);
-    else if(args[i] !== undefined)
-      throw new TypeError("Unknown argument type: " + typeof args[i] + " value: " + String(args[i]));
-  }
-
-  return result;
-};
-
-/**
- * FIXME: Second version. Could be better, but first we have to check first version, and then try to switch
- * @param {noh.AttrsAndNodes2} args Arguments parsed as an attributes nodes.
+ * @param {noh.AttrsAndNodes} args Arguments parsed as attributes and nodes.
  * @param {number=} opt_ignore Number of elements to ignore at the beginning of args list. It is important only if args is an array-like object (default is 0)
  * @param {noh.RecAttrsAndNodes=} opt_result A result object to be extended.
  * @return {noh.RecAttrsAndNodes} Attributes and children extracted from args.
  */
-noh.organize2 = function(args, opt_ignore, opt_result) {
+noh.organize = function(args, opt_ignore, opt_result) {
 
   var result = opt_result ? opt_result : {
     attrs: {},
@@ -246,7 +186,7 @@ noh.organize2 = function(args, opt_ignore, opt_result) {
     result.nodes.push(noh.text(args));
   else if(noh.isArrayLike(args))
     for(var i = opt_ignore === undefined ? 0 : opt_ignore; i < args.length; ++i)
-      noh.organize2(args[i], 0, result);
+      noh.organize(args[i], 0, result);
   else if(args instanceof Object)
     $.extend(result.attrs, args);
   else if((args === undefined)||(args === null))
@@ -352,58 +292,72 @@ noh.Node = function() {
   this.parent = null;
 
   /**
-   * @type {noh.Node}
    * the dom property have to be overriden in derivatives!
+   * @type {noh.Node}
    */
   this.dom = null;
 
+  /**
+   * The jQuery object representing this node.
+   * the $ property have to be overriden in derivatives!
+   * TODO: better type description?
+   * @type {Object}
+   */
   this.$ = null;
 };
 
 
 /**
  * Adds a new child node at the end.
- * @param {noh.Node} node A node to add as a last child of our node.
+ * @param {!noh.Node} node A node to add as a last child of our node.
+ * @return {!noh.Node} this (for chaining)
  */
 noh.Node.prototype.add = function(node) {
   node.attachToDOM(this.dom);
   node.parent = this;
   Array.prototype.push.call(this, node);
+  return this;
 };
 
 /**
  * Removes last child node.
+ * @return {!noh.Node} this (for chaining)
  */
 noh.Node.prototype.rem = function() {
   var node = Array.prototype.pop.call(this);
   node.parent = null;
   node.detachFromDOM(this.dom);
+  return this;
 };
 
 
 /**
  * This dummy method is only for console to display our Node as an array..
- * @see http://stackoverflow.com/questions/6599071/array-like-objects-in-javascript
  * TODO: implement real splice with callback for inserting and removing DOM elements;
  * then implement other array-like methods using splice. (like: pop, push, shift, unshift) 
+ * @see http://stackoverflow.com/questions/6599071/array-like-objects-in-javascript
  */
 noh.Node.prototype.splice = function() { throw new NotSupportedError(); };
 
 
 /**
  * Attaches a node to given DOM root element
- * @param {!Node} root
+ * @param {!noh.Node} root
+ * @return {!noh.Node} this (for chaining)
  */
 noh.Node.prototype.attachToDOM = function(root) {
   root.appendChild(this.dom);
+  return this;
 };
 
 /**
  * Detaches a node from given DOM root element
- * @param {!Node} root
+ * @param {!noh.Node} root
+ * @return {!noh.Node} this (for chaining)
  */
 noh.Node.prototype.detachFromDOM = function(root) {
   root.removeChild(this.dom);
+  return this;
 };
 
 
@@ -427,8 +381,7 @@ noh.Text.prototype = new noh.Node();
 /**
  * A base constructor for the DOM elements (Besides HTML elements it can be SVG or MathMl elements).
  * @param {string} tag Tag name like: div or img or table etc..
- * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
- * @see noh.organize for more detailed explanation about attributes and children parameters
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes. See {@linkcode noh.organize} for more detailed explanation about attributes and children parameters.
  * @constructor
  * @extends {noh.Node}
  */
@@ -452,21 +405,73 @@ noh.Element = function(tag, var_args) {
 noh.Element.prototype = new noh.Node();
 
 /**
- * Gets or sets element's attribute
+ * Sets an element's attribute
  * @param {string} name
- * @param {string=} opt_value
- * @return {string=}
+ * @param {string} value
+ * @return {!noh.Element} this (for chaining)
  */
-noh.Element.prototype.attr = function(name, opt_value) {
-  if(opt_value === undefined)
-    return this.$.attr(name);
-  else
-    this.$.attr(name, opt_value);
+noh.Element.prototype.attr = function(name, value) {
+  this.$.attr(name, value);
+  return this;
 };
 
 
+/**
+ * Applies the css style (just a convenient shortcut for typical jQuery method invocation)
+ * @see http://api.jquery.com/css/#css2
+ * @param {string} name CSS property name
+ * @param {string} value CSS property value
+ * @return {!noh.Element} this (for chaining)
+ */
+noh.Element.prototype.css = function(name, value) {
+  this.$.css(name, value);
+  return this;
+};
+
+/**
+ * Attach an event handling function for one or more events to this element.
+ * (just a convenient shortcut for typical jQuery method invocation)
+ * @see http://api.jquery.com/on/#on-events-selector-data-handlereventObject
+ * @param {string} event One or more space separated events (usually its just one word like: "click")
+ * @param {string} handler A function to execute when the event is triggered.
+ * @return {!noh.Element} this (for chaining)
+ */
+noh.Element.prototype.on = function(event, handler) {
+  this.$.on(events, handler);
+  return this;
+};
+
+/**
+ * Add one or more classes to element's "class" attribute
+ * @param {string} class One or more space-separated classes to add to the class attribute
+ * @return {!noh.Element} this (for chaining)
+ */
+noh.Element.prototype.addclass = function(aclass) {
+  this.$.addClass(aclass);
+  return this;
+}
+
+noh.Element.prototype.hasclass = function(aclass) {
+  return this.$.hasClass(aclass);
+}
+
+noh.Element.prototype.toggleclass = function(aclass) {
+  this.$.toggleClass(aclass);
+  return this;
+}
 
 
+
+
+/**
+ * Remove one or more classes from element's "class" attribute
+ * @param {string} class One or more space-separated classes to be removed from the class attribute
+ * @return {!noh.Element} this (for chaining)
+ */
+noh.Element.prototype.remclass = function(aclass) {
+  this.$.removeClass(aclass);
+  return this;
+}
 
 
 /* 
@@ -483,8 +488,7 @@ noh.Element.prototype.attr = function(name, opt_value) {
 
 /**
  * Just a shortcut for a table with one row only
- * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
- * @see noh.organize for more detailed explanation about attributes and children parameters
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes. See {@linkcode noh.organize} for more detailed explanation about attributes and children parameters.
  * @return {noh.Element} A new table Node with one row and given attributes and children.
  */
 noh.table1r = function(var_args) {
@@ -531,10 +535,10 @@ noh.syntaxhl = function(brush, code) {
  * This Element creates the "pre" html element with a source code of given function inside.
  * The "pre" element CSS "class" is set to match the SyntaxHighlighter requirements and
  * can be easly coloured using that plugin.
- * @param {function()} afunction The function which source code should be rendered.
- * @return {noh.Element} A new srccode Element.
  * @see {@link http://alexgorbatchev.com/SyntaxHighlighter|SyntaxHighlighter} The highlighting plugin.
  * @see index.html Examples of using this element and SyntaxHighlighter plugin.
+ * @param {function()} afunction The function which source code should be rendered.
+ * @return {noh.Element} A new srccode Element.
  */
 noh.srccode = function(afunction) {
   return noh.syntaxhl("js", afunction.toString());
@@ -557,6 +561,7 @@ noh.IBlind.prototype.down = function() {};
 /**
  * Rolls the blind down (to show it content) or up (hiding the content)
  * @param {boolean} down
+ * @return {!noh.IBlind} this (for chaining)
  */
 noh.IBlind.prototype.roll = function(down) {};
 
@@ -564,8 +569,7 @@ noh.IBlind.prototype.roll = function(down) {};
 
 /**
  * An object that can show or hide it's content by rolling it down (hidden->visible) or up (visible->hidden)
- * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
- * @see noh.organize for more detailed explanation about attributes and children parameters
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes. See {@linkcode noh.organize} for more detailed explanation about attributes and children parameters.
  * @constructor
  * @extends {noh.Element}
  * @implements {noh.IBlind}
@@ -573,9 +577,8 @@ noh.IBlind.prototype.roll = function(down) {};
  * to avoid forcing browser to relayout the whole page too much; TODO: warnings in documentation
  */
 noh.Blind = function(var_args) {
-  var smooth = noh.options.smooth ? ' ' + noh.options.smooth : '';
-  var content = noh.div({class:'noh blind content smooth' + smooth}, arguments);
-  noh.Element.call(this, "div", {class: 'noh blind smooth' + smooth}, content);
+  var content = noh.div({class:'noh blind content smooth'}, arguments);
+  noh.Element.call(this, "div", {class: 'noh blind smooth'}, content);
   this.content_ = content;
   this.roll(false);
   var this_ = this;
@@ -593,10 +596,11 @@ noh.Blind.prototype.down = function() { return this.down_; };
 /**
  * Rolls the blind down (to show it content) or up (hiding the content)
  * @param {boolean} down
+ * @return {!noh.Blind} this (for chaining)
  */
 noh.Blind.prototype.roll = function(down) {
   var $blind = this.$;
-  var $content = $(this.content_.dom);
+  var $content = this.content_.$;
   var w = $content.width();
   var h = $content.height();
   $content.css("clip", "rect(0px " + w + "px " + (down ? h : 0) + "px 0px");
@@ -604,6 +608,7 @@ noh.Blind.prototype.roll = function(down) {
   $blind.width(w);
   $blind.height(down ? h : 0);
   this.down_ = down;
+  return this;
 };
 
 /**
@@ -633,6 +638,7 @@ noh.IOneOf.prototype.selected = function() {};
 /**
  * Selects an element with given index (-1 means: do not select any element)
  * @param {number} idx
+ * @return {!noh.IOneOf} this (for chaining)
  */
 noh.IOneOf.prototype.select = function(idx) {};
 
@@ -643,8 +649,7 @@ noh.IOneOf.prototype.select = function(idx) {};
 /**
  * Element that displays one of his children at a time (or none).
  * (the children are placed one below another and then their visibility is changed respectively)
- * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
- * @see noh.organize for more detailed explanation about attributes and children parameters
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes. See {@linkcode noh.organize} for more detailed explanation about attributes and children parameters.
  * @constructor
  * @extends {noh.Element}
  * @implements {noh.IOneOf}
@@ -672,8 +677,8 @@ noh.OneOf.prototype.selected = function() { return this.selected_; };
 
 /**
  * Displays given child and hides all the others.
- * @param {(number|Node)} idx Number of child to display or the child Node itself.
- * (-1 or null means: do not display any child)
+ * @param {(number|noh.Node)} idx Number of child to display or the child Node itself. (-1 or null means: do not display any child)
+ * @return {!noh.OneOf} this (for chaining)
  */
 noh.OneOf.prototype.select = function(idx) {
   if(idx instanceof noh.Node)
@@ -691,22 +696,24 @@ noh.OneOf.prototype.select = function(idx) {
     this[idx].roll(true);
 
   this.selected_ = idx;
+
+  return this;
 };
 
 /** @private */
 noh.OneOf.prototype.selectModulo_ = function(idx) {
-  this.select(idx < 0 ? this.length-1 : idx % this.length);
+  return this.select(idx < 0 ? this.length-1 : idx % this.length);
 };
 
 /**
  * Changes the displayed child to the next one.
  */
-noh.OneOf.prototype.next = function() { this.selectModulo_(this.selected() + 1); };
+noh.OneOf.prototype.next = function() { return this.selectModulo_(this.selected() + 1); };
 
 /**
  * Changes the displayed child to the previous one.
  */
-noh.OneOf.prototype.prev = function() { this.selectModulo_(this.selected() - 1); };
+noh.OneOf.prototype.prev = function() { return this.selectModulo_(this.selected() - 1); };
 
 
 /**
@@ -724,7 +731,7 @@ noh.oneof = function(var_args) {
  * This Element displays the "details..." button, and displays the content only after user clicks it.
  * Then the user can hide the content again by clicking the button again.
  * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes
- * @return {noh.Element} 
+ * @return {!noh.Element} 
  */
 noh.details = function(var_args) {
   var content = noh.div({class: "noh details content"}, arguments);
@@ -733,6 +740,300 @@ noh.details = function(var_args) {
   button.$.click(function() {blind.roll(!blind.down());});
   return noh.div({class: "noh details"}, noh.div(button), noh.div(blind));
 };
+
+
+
+
+/**
+ * An object that can rotate its children smoothly up or down
+ * @param {number} lines How many elements will be visible. The rest will be hidden (opacity:0 unless user change some css styles)
+ * @param {string|number} width A width of the reel. It should be set big enough, so all elements fit inside.
+ * It will be used to set three CSS properties: "width", "min-width", "max-width", so it can be string like "400px".
+ * It can also be set to special value: "dynamic" or: "automatic",
+ * and in that case it will be computed automaticly using the actual size of elements, when reel is shown and when it rotates.
+ * The difference between "automatic" and "dynamic" is that "dynamic" take into account only visible element in every moment,
+ * and "automatic" checks all elements every time (also hidden ones) (as a result "dynamic" is little more dynamic that "automatic")
+ * @param {string|number} height A height of the reel. It should be set big enough, so elements don't overlap too much.
+ * See param width for details.
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes. See {@linkcode noh.organize} for more detailed explanation about attributes and children parameters.
+ * @constructor
+ * @extends {noh.Element}
+ * @implements {noh.IOneOf}
+ * TODO: it can change its size smoothly so it should be inside some absolutely positioned block,
+ * to avoid forcing browser to relayout the whole page too much; TODO: warnings in documentation
+ */
+noh.Reel = function(lines, width, height, var_args) {
+  var an = noh.organize(arguments, 3);
+  for(var i = 0; i < an.nodes.length; ++i) {
+    var element = noh.div({class:'noh reel element smooth'}, an.nodes[i]);
+    an.nodes[i] = element;
+  }
+  noh.Element.call(this, "div", {class: 'noh reel smooth'}, an.attrs, an.nodes);
+
+  /**
+   * @readonly
+   */
+  this.lines = lines;
+
+  /**
+   * @readonly
+   */
+  this.rotation = 0;
+
+  this.width = width;
+  this.height = height;
+  this.chksize();
+
+  var this_ = this;
+  this.$.show(function() {this_.rotate(0);}); // to update positions and size
+  this.selected_ = -1;
+};
+
+noh.Reel.prototype = new noh.Element("div");
+
+/**
+ * @return {number}
+ */
+noh.Reel.prototype.selected = function() { return this.selected_; };
+
+/**
+ * Select given line (element at that line nr will always have CSS class "selected")
+ * @param {number} nr Line nr to select.
+ * @return {!noh.Reel} this (for chaining)
+ */
+noh.Reel.prototype.select = function(nr) {
+  if((nr < -1) || (nr >= this.length))
+    nr = -1;
+
+  if(this.selected_ != -1)
+    this.getelem(this.selected_).remclass("selected");
+
+  if(nr != -1)
+    this.getelem(nr).addclass("selected");
+
+  this.selected_ = nr;
+
+  return this;
+};
+
+/**
+ * Updates CSS properties: "min-width", "max-width", "width", "min-height", "max-height", "height"; if reel width and height was specified as "dynamic"
+ */
+noh.Reel.prototype.chksize = function() {
+  var size = 0;
+  var maxsize = 0;
+  if(this.width == "automatic") {
+    for(var i = 0; i < this.length; ++i) {
+      esize = this[i].$.width();
+      if(esize > size)
+        size = esize;
+    }
+  }
+  else if(this.width == "dynamic") {
+    for(var i = 0; i < this.lines; ++i) {
+      esize = this.getelem(i).$.width();
+      if(esize > size)
+        size = esize;
+    }
+  }
+  else
+    size = this.width;
+  this.css("min-width", size).css("max-width", size).css("width", size);
+  this.exactwidth_ = size;
+
+  size = 0;
+  if(this.height == "automatic") {
+    for(var i = 0; i < this.length; ++i) {
+      esize = this[i].$.height();
+      if(esize > size)
+        size = esize;
+    }
+    size *= this.lines;
+  }
+  else if(this.height == "dynamic") {
+    for(var i = 0; i < this.lines; ++i) {
+      esize = this.getelem(i).$.height();
+      if(esize > size)
+        size = esize;
+    }
+    size *= this.lines;
+  }
+  else
+    size = this.height;
+  this.css("min-height", size).css("max-height", size).css("height", size);
+  this.exactheight_ = size;
+};
+
+/**
+ * @param {number} nr Line nr
+ * @return {number} fixed line nr. Between 0 and this.length-1
+ */
+noh.Reel.prototype.fixLineNr_ = function(nr) {
+  while(nr < 0)
+    nr += this.length; //FIXME: better computation, without loop.
+  while(nr >= this.length)
+    nr -= this.length; //FIXME: better computation, without loop.
+
+  return nr;
+};
+
+
+/**
+ * Returns a child at given position according to actual rotation.
+ * Position 0 is at the top, 1 is below it, and so on..
+ * @param {number} nr Which line to get.
+ * @return {noh.Node} A child at given position.
+ */
+noh.Reel.prototype.getelem = function(nr) {
+  return this[this.fixLineNr_(nr - this.rotation)];
+};
+
+/**
+ * Update the reel properties like size, elements positions, CSS classes etc.
+ * @return {!noh.Reel} this (for chaining)
+ */
+noh.Reel.prototype.update = function() {
+
+  this.chksize();
+
+  for(var i = 0; i < this.length; ++i) {
+    var element = this.getelem(i);
+    element.remclass("selected");
+    if(i < this.lines) {
+      element.remclass("hidden").addclass("visible");
+      element.css("top", "" + (i * this.exactheight_ / this.lines) + "px");
+    }
+    else {
+      element.remclass("visible").addclass("hidden");
+      element.css("top", "" + ((this.length-i-1) * this.exactheight_ / (this.length-this.lines)) + "px");
+    }
+  }
+  if(this.selected_ != -1)
+    this.getelem(this.selected_).addclass("selected");
+  return this;
+};
+
+
+/**
+ * Rotates the reel
+ * @param {number} count How many lines to rotate down. (Negative means up)
+ * @return {!noh.Reel} this (for chaining)
+ */
+noh.Reel.prototype.rotate = function(count) {
+  this.rotation = this.fixLineNr_(this.rotation + count);
+  return this.update();
+};
+
+
+/**
+ * Rotates the reel many times with time gaps
+ * @param {number} count How many lines to rotate down. (Negative means up)
+ * @param {number=} opt_random If specified, the reel will generate random number between 0 and opt_random, and add it to param count.
+ * @param {number=} opt_speed Defines how many milisecond to wait between single rotations. Default is 200
+ * @return {!noh.Reel} this (for chaining)
+ */
+noh.Reel.prototype.spin = function(count, opt_random, opt_time) {
+  if(this.intervalId_) {
+    console.error("The reel is already spinning!");
+    return;
+  }
+  if(opt_random)
+    count += Math.round(Math.random() * opt_random);
+  var time = opt_time ? opt_time : 200;
+  var this_ = this;
+  var callback = function() {
+    if(count == 0) {
+      window.clearInterval(this_.intervalId_);
+      this_.intervalId_ = undefined;
+    }
+    else if(count > 0) {
+      this_.rotate(1);
+      --count;
+    }
+    else {
+      this_.rotate(-1);
+      ++count;
+    }
+  };
+  this.intervalId_ = window.setInterval(callback, time);
+};
+
+/**
+ * TODO: description
+ * @param {number} lines See {@linkcode noh.Reel} for details.
+ * @param {string|number} width See {@linkcode noh.Reel} for details. 
+ * @param {string|number} height See {@linkcode noh.Reel} for details. 
+ * @param {...noh.AttrsAndNodes} var_args See {@linkcode noh.Reel} for details.  
+ * @return {!noh.Reel}
+ */
+noh.reel = function(lines, width, height, var_args) {
+  var an = noh.organize(arguments, 3);
+  return new noh.Reel(lines, width, height, an.attrs, an.nodes);
+};
+
+noh.reelsel = function(lines, width, height, selnr, var_args) {
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ * FIXME: the rest of this file is an old not tested code!
+ * TODO: review it first! (use chaining - it wasn't there when this code was written)
+ * TODO: make simple tests for it and try it out
+ ****************************************************************************/
+
+
+
+
+
+
+
+/**
+ * @interface
+ * This is a basic interface for loggers. It is a small subset of chrome console API and firefox console API.
+ * It just allows to log messages with three different severity levels:
+ * "info", "warn", "error" (and "log" which is usually the same as "info")
+ */
+noh.IConsole = function() {};
+
+/**
+ * Logs given data with default (general) severity. Usually this is the same as "info"
+ * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
+ */
+noh.IConsole.prototype.log = function(var_args) {};
+
+/**
+ * Logs given data with "info" (normal) severity. Usually this is the same as "log"
+ * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ */
+noh.IConsole.prototype.info = function(var_args) {};
+
+
+
+
+/**
+ * @param {noh.Attrs=} opt_attrs Additional attributes of created logger
+ * @implements {IConsole}
+ */
+noh.llogger = function(opt_attrs) {
+    var node = noh.text($.extend({style: "font-size: smaller;"}, opt_attrs));
+    return noh.h3("TODO");
+};
+
+noh.plogger = function() { return noh.h3("TODO"); };
+
 
 
 
@@ -751,6 +1052,7 @@ noh.ISelectable.prototype.selected = function() {};
 
 /**
  * Selects/deselects the object. (depending on this.selected())
+ * @return {!noh.ISelectable} this (for chaining)
  */
 noh.ISelectable.prototype.toggle = function() {};
 
@@ -778,9 +1080,9 @@ noh.MenuItem.prototype = new noh.Element("div");
  * This method should be overriden if we want to add some new fuctionality when the state is changing;
  * but you should call the original toggle anyway
  */
-noh.MenuItem.prototype.toggle = function() { this.$.toggleClass("selected"); };
+noh.MenuItem.prototype.toggle = function() { this.toggleclass("selected"); };
 
-noh.MenuItem.prototype.selected = function() { return this.$.hasClass("selected"); };
+noh.MenuItem.prototype.selected = function() { return this.hasclass("selected"); };
 
 /**
  * @param {noh.Node|string} content Usually it is just a text to display, but it can be any noh.Node.
@@ -888,35 +1190,5 @@ noh.submenu = function(item, menu) {
   submenu.menu = menu;
   return submenu;
 };
-
-
-
-
-
-
-
-
-/**
- * @interface
- * TODO
- */
-noh.IConsole = function() {};
-
-
-
-
-
-/**
- * @param {noh.Attrs=} opt_attrs Additional attributes of created logger
- * @implements {IConsole}
- */
-noh.llogger = function(opt_attrs) {
-    var node = noh.text($.extend({style: "font-size: smaller;"}, opt_attrs));
-    return noh.h3("TODO");
-};
-
-noh.plogger = function() { return noh.h3("TODO"); };
-
-
 
 

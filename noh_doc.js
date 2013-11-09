@@ -59,7 +59,7 @@ function about() {
       noh.syntaxhl("js", "noh.menu, noh.oneof, noh.details, noh.syntaxhl, noh.srccode, noh.llogger, noh.plogger")
     ),
     p("TODO: more introduction - how it replaces templates (there are other libraries, but...), that many times it's better to generate content from js because html is verbose (long download) etc.."),
-    p("TODO: more examples - with not standard tags, bus still simple; with attributes and styles; different ways to insert attributes and nodes - a few examples giving the same result"),
+    p("TODO: more examples - with not standard tags, but still simple; with attributes and styles; different ways to insert attributes and nodes - a few examples giving the same result"),
     p("TODO: about initialization; about options; about pollute:true and why we should avoid it in bigger projects;"),
     p("TODO: example that adds some dynamic behavoiur, and serves as a kind of template"),
     p("The NOH library requires a jQuery library. (tested on: jquery-1.10.2.js)"),
