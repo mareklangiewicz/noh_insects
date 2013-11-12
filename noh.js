@@ -118,7 +118,8 @@ noh.TAGS = [
   "ul", "ol", "li", 
   "dl", "dt", "dd",
   "h1", "h2", "h3", "h4", "h5", "h6",
-  "form", "fieldset", "input", "textarea", "label", "select", "option", "b", "pre", "code", "i", "button"
+  "form", "fieldset", "input", "textarea", "label", "select", "option", "b", "pre", "code", "i", "button",
+  "kbd"
 ];
 
 
@@ -213,7 +214,6 @@ noh.pushArray = function(arrIn, arrOut) {
  * @return {number} index of first occurrence of val in arr; or -1 if not found.
  * @param {*} val A value to find in arr.
  * @param {!Array} arr Array to find the val in.
- * TODO: do we need it now at all?
  */
 noh.indexOf = function(val, arr) {
   for(var x = 0; x < arr.length; ++x)
@@ -371,6 +371,7 @@ noh.Text = function(text) {
   this.text = text;
   noh.Node.call(this);
   this.dom = document.createTextNode(text);
+  this.dom.noh = this;
   this.$ = $(this.dom);
 };
 
@@ -391,6 +392,7 @@ noh.Element = function(tag, var_args) {
   noh.Node.call(this);
     
   this.dom = document.createElement(tag);
+  this.dom.noh = this;
   this.$ = $(this.dom);
 
   var an = noh.organize(arguments, 1);
@@ -432,11 +434,11 @@ noh.Element.prototype.css = function(name, value) {
  * Attach an event handling function for one or more events to this element.
  * (just a convenient shortcut for typical jQuery method invocation)
  * @see http://api.jquery.com/on/#on-events-selector-data-handlereventObject
- * @param {string} event One or more space separated events (usually its just one word like: "click")
+ * @param {string} events One or more space separated events (usually its just one word like: "click")
  * @param {string} handler A function to execute when the event is triggered.
  * @return {!noh.Element} this (for chaining)
  */
-noh.Element.prototype.on = function(event, handler) {
+noh.Element.prototype.on = function(events, handler) {
   this.$.on(events, handler);
   return this;
 };
@@ -474,12 +476,36 @@ noh.Element.prototype.remclass = function(aclass) {
 }
 
 
+
+
+/**
+ * Scrolls the page to given position (in pixels)
+ * @param {number} offset Position to which to scroll. (in pixels; from the top of the page)
+ * @param {number=} opt_duration Time in miliseconds determining how long the scrolling will run. Default is 1000
+ */
+noh.scroll = function(offset, opt_duration) {
+  $('html,body').animate( {scrollTop: offset }, opt_duration ? opt_duration : 1000); 
+};
+
+
+/**
+ * Scrolls the page, so the element is on the top
+ * @param {number=} opt_duration Time in miliseconds determining how long the scrolling will run. Default is 1000
+ * @return {!noh.Element} this (for chaining)
+ */
+noh.Element.prototype.scroll = function(opt_duration) {
+  noh.scroll(this.$.offset().top, opt_duration);
+  return this;
+}
+
+
 /* 
  * *************************************************************
  * Core code ends here.
  * The rest of this file contains some basic but useful examples
  * *************************************************************
  */
+
 
 
 
@@ -546,6 +572,49 @@ noh.srccode = function(afunction) {
 
 
 
+
+/**
+ * Makes given element sleepy. By default it is in "asleep" state (it has the "asleep" CSS class)
+ * If we wake it (method: wake) it will be awake (will have the "awake" CSS class) for some time.
+ * Then it will fall asleep again (the "awake" CSS class is removed, and it gets "asleep" CSS class).
+ * User can wake it again by invoking the "wake" method.
+ * User can of course define how it will behave in "awake" and in "asleep" states in CSS file.
+ * @param {!noh.Element} element to modify
+ * @param {number=} opt_duration How many miliseconds will it be awake by default (it will be 1000 if not provided).
+ * @return {!noh.Element}
+ */
+noh.sleepy = function(element, opt_duration) {
+
+  element.addclass("noh").addclass("sleepy");
+
+  element.defaultAwakeTime_ = opt_duration === undefined ? 1000 : opt_duration;
+
+  element.wake = function(opt_duration) {
+    this.remclass("asleep").addclass("awake");
+    window.clearTimeout(this.timeoutId_);
+    var duration = opt_duration === undefined ? element.defaultAwakeTime_ : opt_duration;
+    var callback = function() { element.sleep(); }
+    this.timeoutId_ = window.setTimeout(callback, duration);
+  };
+
+  element.sleep = function() {
+    window.clearTimeout(this.timeoutId_);
+    this.timeoutId_ = undefined;
+    this.remclass("awake").addclass("asleep");
+  };
+
+  element.sleep();
+
+  return element;
+};
+
+
+
+
+
+
+
+
 /**
  * An object that can show or hide it's content by rolling it down (hidden->visible) or up (visible->hidden)
  * @interface
@@ -573,12 +642,12 @@ noh.IBlind.prototype.roll = function(down) {};
  * @constructor
  * @extends {noh.Element}
  * @implements {noh.IBlind}
- * TODO: it can change its size smoothly so it should be inside some absolutely positioned block,
- * to avoid forcing browser to relayout the whole page too much; TODO: warnings in documentation
+ * TODO: it can change its size dynamicly so it should be inside some absolutely positioned block, for better performance.
+ * (to avoid forcing browser to relayout the whole page too much)
  */
 noh.Blind = function(var_args) {
-  var content = noh.div({class:'noh blind content smooth'}, arguments);
-  noh.Element.call(this, "div", {class: 'noh blind smooth'}, content);
+  var content = noh.div({class:'noh blind content'}, arguments);
+  noh.Element.call(this, "div", {class: 'noh blind'}, content);
   this.content_ = content;
   this.roll(false);
   var this_ = this;
@@ -604,7 +673,14 @@ noh.Blind.prototype.roll = function(down) {
   var w = $content.width();
   var h = $content.height();
   $content.css("clip", "rect(0px " + w + "px " + (down ? h : 0) + "px 0px");
-  $content.css("opacity", down ? '1' : '0');
+  if(down) {
+    this.content_.remclass("hidden");
+    this.content_.addclass("visible");
+  }
+  else {
+    this.content_.remclass("visible");
+    this.content_.addclass("hidden");
+  }
   $blind.width(w);
   $blind.height(down ? h : 0);
   this.down_ = down;
@@ -653,8 +729,7 @@ noh.IOneOf.prototype.select = function(idx) {};
  * @constructor
  * @extends {noh.Element}
  * @implements {noh.IOneOf}
- * TODO: it can change its size smoothly so it should be inside some absolutely positioned block,
- * to avoid forcing browser to relayout the whole page too much; TODO: warnings in documentation
+ * TODO: it can change its size dynamicly so it should be inside some absolutely positioned block, for better performance.
  */
 noh.OneOf = function(var_args) {
   var an = noh.organize(arguments);
@@ -737,7 +812,7 @@ noh.details = function(var_args) {
   var content = noh.div({class: "noh details content"}, arguments);
   var blind = noh.blind(content);
   var button = noh.button({class: "noh details button", title: "show/hide details"}, "details...");
-  button.$.click(function() {blind.roll(!blind.down());});
+  button.on("click", function() {blind.roll(!blind.down());});
   return noh.div({class: "noh details"}, noh.div(button), noh.div(blind));
 };
 
@@ -745,7 +820,7 @@ noh.details = function(var_args) {
 
 
 /**
- * An object that can rotate its children smoothly up or down
+ * An object that can rotate its children up or down
  * @param {number} lines How many elements will be visible. The rest will be hidden (opacity:0 unless user change some css styles)
  * @param {string|number} width A width of the reel. It should be set big enough, so all elements fit inside.
  * It will be used to set three CSS properties: "width", "min-width", "max-width", so it can be string like "400px".
@@ -759,16 +834,15 @@ noh.details = function(var_args) {
  * @constructor
  * @extends {noh.Element}
  * @implements {noh.IOneOf}
- * TODO: it can change its size smoothly so it should be inside some absolutely positioned block,
- * to avoid forcing browser to relayout the whole page too much; TODO: warnings in documentation
+ * TODO: it can change its size dynamicly so it should be inside some absolutely positioned block, for better performance.
  */
 noh.Reel = function(lines, width, height, var_args) {
   var an = noh.organize(arguments, 3);
   for(var i = 0; i < an.nodes.length; ++i) {
-    var element = noh.div({class:'noh reel element smooth'}, an.nodes[i]);
+    var element = noh.div({class:'noh reel element'}, an.nodes[i]);
     an.nodes[i] = element;
   }
-  noh.Element.call(this, "div", {class: 'noh reel smooth'}, an.attrs, an.nodes);
+  noh.Element.call(this, "div", {class: 'noh reel'}, an.attrs, an.nodes);
 
   /**
    * @readonly
@@ -971,15 +1045,218 @@ noh.reel = function(lines, width, height, var_args) {
   return new noh.Reel(lines, width, height, an.attrs, an.nodes);
 };
 
-noh.reelsel = function(lines, width, height, selnr, var_args) {
+
+
+/**
+ * Makes given element more fancy.
+ * It always add a "fancy" class (so we can define in CSS file what really is "fancy",
+ * but it can also add some more fun javascript stuff to some elements (depending of the element type)
+ * you can enable/disable/configure different fancy features using "options" parameter.
+ * @param {!noh.Element} element to modify
+ * @param {noh.FancyOptions=} opt_options TODO: define some configuration options
+ * @return {!noh.Element}
+ */
+noh.fancy = function(element, opt_options) {
+  element.addclass("fancy");
+  if(noh.indexOf(element.tag, ["h1", "h2", "h3", "h4"]) != -1) {
+    element.on("click", function() { this.noh.scroll(); });
+  }
+  return element;
+}
+
+
+
+
+/**
+ * Something like a simple "kbd" element, but it wraps urls in given text inside the appropriate "a" elements.
+ * @param {string} atext Text to wrap inside kdb element.
+ * @return {!noh.Element} kbd element with given text splitted to words; and with urls wrapped inside the a links
+ */
+noh.ukbd = function(atext) {
+  var words = atext.split(/\s+/);
+  var url = /(https?|ftp):\/\//;
+  var map = words.map(function(word) {
+    if(url.test(word))
+      return a({href:word}, word);
+    else
+      return " " + word + " ";
+  });
+  return noh.kbd(map);
+}
+
+
+
+/**
+ * @interface
+ * This is basic interface for loggers.
+ */
+noh.ILogger = function() {};
+
+
+/**
+ * Logs given data with given severity
+ * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
+ * @param {!Array.<*>} data Data to log. It has to be an array like object.
+ */
+noh.ILogger.prototype.log = function(classes, data) {};
+
+
+
+
+/**
+ * @param {Array.<!noh.ILogger>} loggers
+ * @return {!noh.ILogger}
+ */
+noh.multilogger = function(loggers) {
+  //TODO
+};
+
+
+/**
+ * Little (one line) logger.
+ * @constructor
+ * @implements {noh.ILogger}
+ */
+noh.LLogger = function() {
+  noh.Element.call(this, "div", {class: 'noh little logger'});
+};
+
+noh.LLogger.prototype = new noh.Element("div");
+
+/**
+/**
+ * Logs given data with given severity
+ * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
+ * @param {!Array.<*>} data Data to log. It has to be an array like object.
+ */
+noh.LLogger.prototype.log = function(classes, data) { 
+  if(this.length)
+    this.rem(); // removes last (in this case only one) child.
+  var line = "";
+  if(data.length > 0)
+    line += data[0];
+  for(var i = 1; i < data.length; ++i)
+    line = line + ", " + data[i].toString();  
+  var ukbd = noh.ukbd(line).addclass(classes); //TODO: play with this .toString()
+  this.add(ukbd);
 };
 
 
 
 
+/**
+ * Little (one line) logger.
+ * @implements {ILogger}
+ */
+noh.llogger = function() {
+  return new noh.LLogger();
+};
+
+
+noh.sllogger = function(opt_duration) {
+  var llogger = noh.llogger();
+  var sllogger = noh.sleepy(llogger, opt_duration);
+  sllogger.log_ = sllogger.log;
+  sllogger.log = function(classes, data) { this.log_(classes, data); this.wake(); };
+  return sllogger;
+};
+
+
+noh.plogger = function() { return noh.h3("TODO"); };
 
 
 
+
+
+
+/**
+ * @interface
+ * Another interface for loggers. This one is subset of chrome console API and firefox console API.
+ * It just allows to log messages with three different severity levels:
+ * "info", "warn", "error" (and "log" which is the same as "info")
+ */
+noh.IConsole = function() {};
+
+/**
+ * Logs given data with default (general) severity. Usually this is the same as "info"
+ * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
+ */
+noh.IConsole.prototype.log = function(var_args) {};
+
+/**
+ * Logs given data with "info" (normal) severity. Usually this is the same as "log"
+ * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ */
+noh.IConsole.prototype.info = function(var_args) {};
+
+/**
+ * Logs given data with "warn" (warning) severity. Usually this severity is marked somehow (like bold font), but not with red color.
+ * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ */
+noh.IConsole.prototype.warn = function(var_args) {};
+
+/**
+ * Logs given data with "error" severity. Usually this severity is highlighted (f.e. with red bold font).
+ * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ */
+noh.IConsole.prototype.error = function(var_args) {};
+
+
+
+
+/**
+ * Wraps an ILogger object into IConsole.
+ * This console can be then installed as global console object (window.console), so all system logs will be logged using given logger.
+ * @implements {noh.IConsole}
+ * @constructor
+ * @param {!noh.ILogger} logger A logger to wrap.
+ */
+noh.Console = function(logger) {
+  this.logger = logger;
+};
+
+
+/**
+ * Logs given data with default (general) severity. This is the same as "info"
+ * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
+ */
+noh.Console.prototype.log = function(var_args) { this.logger.log("info", arguments); };
+
+/**
+ * Logs given data with "info" (normal) severity.
+ * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ */
+noh.Console.prototype.info = function(var_args) { this.logger.log("info", arguments); };
+
+/**
+ * Logs given data with "warn" (warning) severity. Usually this severity is marked somehow (like bold font), but not with red color.
+ * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ */
+noh.Console.prototype.warn = function(var_args) { this.logger.log("warning", arguments); };
+
+/**
+ * Logs given data with "error" severity. Usually this severity is highlighted (f.e. with red bold font).
+ * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ */
+noh.Console.prototype.error = function(var_args) { this.logger.log("error", arguments); };
+
+noh.Console.prototype.debug = function(var_args) { this.logger.log("debug", arguments); };
+
+/**
+ * Installs this console as a global console object.
+ */
+noh.Console.prototype.install = function() { window.console = this; };
+
+
+/**
+ * Wraps an ILogger object into IConsole.
+ * This console can be then installed as global console object (window.console), so all system logs will be logged using given logger.
+ * @param {!ILogger} logger
+ * @return {!IConsole}
+ */
+noh.console = function(logger) {
+  return new noh.Console(logger);  
+};
 
 
 
@@ -999,40 +1276,6 @@ noh.reelsel = function(lines, width, height, selnr, var_args) {
 
 
 
-
-/**
- * @interface
- * This is a basic interface for loggers. It is a small subset of chrome console API and firefox console API.
- * It just allows to log messages with three different severity levels:
- * "info", "warn", "error" (and "log" which is usually the same as "info")
- */
-noh.IConsole = function() {};
-
-/**
- * Logs given data with default (general) severity. Usually this is the same as "info"
- * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
- */
-noh.IConsole.prototype.log = function(var_args) {};
-
-/**
- * Logs given data with "info" (normal) severity. Usually this is the same as "log"
- * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
- */
-noh.IConsole.prototype.info = function(var_args) {};
-
-
-
-
-/**
- * @param {noh.Attrs=} opt_attrs Additional attributes of created logger
- * @implements {IConsole}
- */
-noh.llogger = function(opt_attrs) {
-    var node = noh.text($.extend({style: "font-size: smaller;"}, opt_attrs));
-    return noh.h3("TODO");
-};
-
-noh.plogger = function() { return noh.h3("TODO"); };
 
 
 
@@ -1070,8 +1313,7 @@ noh.ISelectable.prototype.toggle = function() {};
  */
 noh.MenuItem = function(content) {
   noh.Element.call(this, "div", {"class": "noh menu item"}, content);
-  var this_ = this;
-  this.$.click(function() { this_.toggle(); return false; });
+  this.on("click", function() { this.noh.toggle(); return false; });
 }
 
 noh.MenuItem.prototype = new noh.Element("div");

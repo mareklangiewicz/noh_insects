@@ -53,16 +53,15 @@ function runstest(f) {
 function runstests(stests) {
   var testsres = [];
   for(var t in stests)
-    testsres.push(dt(h3(t)), dd(runstest(stests[t])));
+    testsres.push(dt(noh.fancy(h3("stest: ", t))).css("padding", "20px"), dd(runstest(stests[t])));
   var runtests = dl(testsres);
-  runtests.$.find("ul, li").css("list-style", "disc inside"); //TODO: move styles to css file
   return runtests;
 }
 
 
 function noh_tests() {
   return div(
-    h2("Simple tests"),
+    noh.fancy(h2("Simple tests")),
     runstests(tests)
   );
 };
@@ -91,9 +90,44 @@ tests.h16_hack = function() {
 };
 
 
+tests.fancyh16 = function() {
+  return div(
+    noh.fancy(h1("Some h1 text")),
+    noh.fancy(h2("Some h2 text")),
+    noh.fancy(h3("Some h3 text")),
+    noh.fancy(h4("Some h4 text")),
+    noh.fancy(h5("Some h5 text")),
+    noh.fancy(h6("Some h6 text"))
+  );
+};
+
 tests.srccode = function() {
   return noh.srccode(tests.srccode);
 };
+
+tests.sleepy = function() {
+  var content = div({style:"color: green; font-size: xx-large"}, " sleepy BLEBLE", br(), "BLUBLU");
+  var sleepy = noh.sleepy(content, 2000);
+  var style = {"class":"noh link", style:"padding: 5px"};
+  var wake = a(style, "sleepy.wake()");
+  var sleep = a(style, "sleepy.sleep()");
+  var addsmooth = a(style, 'sleepy.parent.addclass("smooth")');
+  var remsmooth = a(style, 'sleepy.parent.remclass("smooth")');
+  wake.$.click(function() {sleepy.wake()});
+  sleep.$.click(function() {sleepy.sleep();});
+  addsmooth.$.click(function() {sleepy.parent.addclass("smooth")});
+  remsmooth.$.click(function() {sleepy.parent.remclass("smooth")});
+  return div(
+    wake,
+    sleep,
+    addsmooth,
+    remsmooth,
+    noh.table1r({style:"border: 6px ridge green"},
+      td(sleepy)
+    )
+  );
+};
+
 
 
 tests.blind = function() {
@@ -161,35 +195,59 @@ tests.details = function() {
 
 function gen_test_reel(reel) {
   var style = {"class":"noh link", style:"padding: 5px"};
+  var addsmooth = a(style, 'reel.parent.addclass("smooth")');
+  var remsmooth = a(style, 'reel.parent.remclass("smooth")');
+  var addfast = a(style, 'reel.parent.addclass("fast")');
+  var remfast = a(style, 'reel.parent.remclass("fast")');
+  var addslow = a(style, 'reel.parent.addclass("slow")');
+  var remslow = a(style, 'reel.parent.remclass("slow")');
+  var addveryslow = a(style, 'reel.parent.addclass("very_slow")');
+  var remveryslow = a(style, 'reel.parent.remclass("very_slow")');
+  var addfancy = a(style, 'reel.addclass("fancy")');
+  var remfancy = a(style, 'reel.remclass("fancy")');
   var rotate1 = a(style, "reel.rotate(1)");
   var rotate2 = a(style, "reel.rotate(2)");
   var rotate3 = a(style, "reel.rotate(3)");
   var rotatem1 = a(style, "reel.rotate(-1)");
   var rotatem2 = a(style, "reel.rotate(-2)");
   var rotatem3 = a(style, "reel.rotate(-3)");
-  var addfancy = a(style, 'reel.addclass("fancy")');
-  var remfancy = a(style, 'reel.remclass("fancy")');
   var spin20 = a(style, 'reel.spin(20)');
   var spinback = a(style, 'reel.spin(-12, -4, 100)');
+  addsmooth.$.click(function() {reel.parent.addclass("smooth")});
+  remsmooth.$.click(function() {reel.parent.remclass("smooth")});
+  addfast.$.click(function() {reel.parent.addclass("fast")});
+  remfast.$.click(function() {reel.parent.remclass("fast")});
+  addslow.$.click(function() {reel.parent.addclass("slow")});
+  remslow.$.click(function() {reel.parent.remclass("slow")});
+  addveryslow.$.click(function() {reel.parent.addclass("very_slow")});
+  remveryslow.$.click(function() {reel.parent.remclass("very_slow")});
+  addfancy.$.click(function() {reel.addclass("fancy")});
+  remfancy.$.click(function() {reel.remclass("fancy")});
   rotate1.$.click(function() {reel.rotate(1)});
   rotate2.$.click(function() {reel.rotate(2)});
   rotate3.$.click(function() {reel.rotate(3)});
   rotatem1.$.click(function() {reel.rotate(-1)});
   rotatem2.$.click(function() {reel.rotate(-2)});
   rotatem3.$.click(function() {reel.rotate(-3)});
-  addfancy.$.click(function() {reel.addclass("fancy")});
-  remfancy.$.click(function() {reel.remclass("fancy")});
   spin20.$.click(function() {reel.spin(20)});
   spinback.$.click(function() {reel.spin(-12, -4, 100)});
   return div(
+    addsmooth,
+    remsmooth, br(),
+    addfast,
+    remfast, br(),
+    addslow, 
+    remslow, br(),
+    addveryslow, 
+    remveryslow, br(),
+    addfancy, 
+    remfancy, br(),
     rotate1,
     rotate2,
     rotate3,
     rotatem1,
     rotatem2,
     rotatem3, br(),
-    addfancy,
-    remfancy,
     spin20,
     spinback,
     div(noh.table1r(td({style:"border: 6px ridge green"}, reel)))
@@ -214,17 +272,58 @@ tests.reel1 = function() {
 
 
 
+function reelnr(min, max) {
+  var str = function(nr, width) {
+    var s = '' + nr;
+    while(s.length < width)
+      s = '0' + s;
+    return s;
+  }
+  var elements = [];
+  var style = {style:"font-family: monospace; margin: 5px; padding: 15px; border: solid black; color: black; font-size: large; width: 100; background: wheat"};
+  for(var i = min; i <=max; ++i)
+    elements.push(div(style, "" + str(i, 3)));
+  return noh.reel(3, "automatic", "automatic", elements).select(1).addclass("smooth").addclass("fancy");
+}
+
 tests.reel2 = function() {
-  var reelnr = function(min, max) {
-    var elements = [];
-    var style = {style:"margin: 15px; padding: 15px; border: solid black; color: black; font-size: large; width: 100; background: wheat"};
-    for(var i = min; i <=max; ++i)
-      elements.push(div(style, "" + i));
-    return noh.reel(3, 150, "automatic", elements).select(1).addclass("fancy");
-  };
   var reel = reelnr(1,12);
   return gen_test_reel(reel);
 };
 
+tests.kbd = function() {
+  return div(noh.ukbd("fjdkl http://www.google.pl google fjsdk ftp://blabal fjdsl http://mareklangiewicz.pl fds fjdsklfds"));
+};
 
+
+tests.sllogger = function() {
+  var sllogger = noh.sllogger(3000);
+  var style = {"class":"noh link", style:"padding: 5px"};
+  var log1 = a(style, 'sllogger.log("info", ["dupa info"])');
+  var log2 = a(style, 'sllogger.log("warning", ["dupa warning"])');
+  var log3 = a(style, 'sllogger.log("error", ["dupa error", "dupa error2", 3, 4, window])');
+  var log4 = a(style, 'sllogger.log("info warning", ["dupa info warning"])');
+  var install = a(style, 'noh.console(sllogger).install()');
+  var addsmooth = a(style, 'sllogger.parent.addclass("smooth")');
+  var remsmooth = a(style, 'sllogger.parent.remclass("smooth")');
+  log1.$.click(function() { sllogger.log("info", ["dupa info"]); });
+  log2.$.click(function() { sllogger.log("warning", ["dupa warning"]); });
+  log3.$.click(function() { sllogger.log("error", ["dupa error", "dupa error2", 3, 4, window]); });
+  log4.$.click(function() { sllogger.log("info warning", ["dupa info warning"]); });
+  install.$.click(function() { noh.console(sllogger).install(); });
+  addsmooth.$.click(function() {sllogger.parent.addclass("smooth")});
+  remsmooth.$.click(function() {sllogger.parent.remclass("smooth")});
+  return div(
+    log1, br(),
+    log2, br(),
+    log3, br(),
+    log4, br(),
+    addsmooth, br(),
+    remsmooth, br(),
+    install, br(),
+    noh.table1r({style:"border: 6px ridge green"},
+      td(sllogger)
+    )
+  );
+};
 

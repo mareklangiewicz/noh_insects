@@ -1,86 +1,42 @@
 /* [ vim: set tabstop=2 shiftwidth=2 expandtab : ] */
 
 
-.noh.smooth {
-  transition: all 0.6s;
-/*  transition: all 1s; */
-/*  transition: all 0s; */
-}
+.smooth .noh           { transition: all 0.6s; }
+.smooth.fast .noh      { transition: all 0.3s; }
+.smooth.slow .noh      { transition: all 1s; }
+.smooth.very_slow .noh { transition: all 2s; }
 
-.noh.blind {
-  position: relative;
-}
-
-.noh.blind.content {
-  position: absolute;
-}
-
-.noh.oneof {
-  position: relative;
-}
-
-.noh.oneof.element {
-  opacity: 0;
-}
-
-.noh.oneof.element.selected {
-  opacity: 1;
-}
-
-.noh.details.button {
-  font-size: x-small;
-}
-
-.noh.reel {
-  position: relative;
-}
-
-.noh.reel.element {
-  position: absolute;
-}
-
-.noh.reel.element.visible {
-  opacity: 1;
-  z-index: 1;
-}
-
-.noh.reel.element.hidden {
-  opacity: 0;
-  z-index: -1;
-}
-
-.fancy .noh.reel.element {
-  opacity: 0.4;
-}
-
-.fancy .noh.reel.element.visible {
-  left: 20px;
-}
-
-.fancy .noh.reel.element.hidden {
-  opacity: 0.1;
-  left: -20px;
-}
-
-.fancy .noh.reel.element.selected {
-  opacity: 1;
-  z-index: 2;
-}
-
-.noh.link {
-  color: blue;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.noh.stest {
-  margin: 30px;
-  padding: 30px;
-  border: double;
-}
+.noh.sleepy.asleep { opacity: 0; }
+.noh.sleepy.awake  { opacity: 1; }
 
 
+.noh.element.selected  { opacity: 1; z-index:  2; }
+.noh.element.visible   { opacity: 1; z-index:  1; }
+.noh.element.hidden    { opacity: 0; z-index: -1; }
 
+.noh.blind         { position: relative }
+.noh.blind.content { position: absolute }
+
+.noh.oneof         { position: relative }
+
+.noh.details.button { font-size: x-small; }
+
+.noh.reel         { position: relative; }
+.noh.reel.element { position: absolute; }
+
+.fancy .noh.reel.element:not(.selected) { opacity: 0.5; }
+.fancy .noh.reel.element.hidden         { opacity: 0.1; left: -10px; }
+.fancy .noh.reel.element.visible        {               left:   0px; }
+
+.noh.link { color: blue; text-decoration: underline; cursor: pointer; }
+
+
+.noh.little.logger {font-size: smaller; }
+.noh.little.logger .warning { font-weight: bold; }
+.noh.little.logger .error   { font-weight: bold; color: red; }
+
+
+.noh.stest { margin: 30px; padding: 30px; border: double; }
 
 
 body {
@@ -88,12 +44,12 @@ body {
   font-size: 12pt;
 }
 
-h1, h2, h3, h4 {
+h1.fancy, h2.fancy, h3.fancy, h4.fancy {
   text-shadow: rgba(64, 64, 64, 0.496094) 4px 3px 2px;
   transition: all 0.4s;
 }
 
-h1:hover, h2:hover, h3:hover, h4:hover {
+h1.fancy:hover, h2.fancy:hover, h3.fancy:hover, h4.fancy:hover {
   text-shadow: rgba(64, 64, 64, 0.496094) 8px 6px 4px;
 }
 
