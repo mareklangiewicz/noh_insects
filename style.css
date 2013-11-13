@@ -31,10 +31,14 @@
 .noh.link { color: blue; text-decoration: underline; cursor: pointer; }
 
 
-.noh.little.logger {font-size: smaller; }
-.noh.little.logger .warning { font-weight: bold; }
-.noh.little.logger .error   { font-weight: bold; color: red; }
+.noh.log.little {font-size: small; white-space: nowrap; }
+.noh.log.little .info    { color: black; }
+.noh.log.little .warning { color: maroon; }
+.noh.log.little .error   { color: red;   }
 
+
+.noh.log.reel .noh.reel.element.visible:hover  { text-shadow: rgba(64, 64, 64, 0.496094) 8px 6px 4px; }
+.noh.log.reel .noh.reel.element.selected       { text-shadow: rgba(64, 64, 64, 0.496094) 4px 3px 2px; }
 
 .noh.stest { margin: 30px; padding: 30px; border: double; }
 

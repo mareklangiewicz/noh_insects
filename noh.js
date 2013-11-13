@@ -185,7 +185,7 @@ noh.organize = function(args, opt_ignore, opt_result) {
     result.nodes.push(args);
   else if(typeof args === "string")
     result.nodes.push(noh.text(args));
-  else if(noh.isArrayLike(args))
+  else if(noh.arr.isArrayLike(args))
     for(var i = opt_ignore === undefined ? 0 : opt_ignore; i < args.length; ++i)
       noh.organize(args[i], 0, result);
   else if(args instanceof Object)
@@ -198,6 +198,10 @@ noh.organize = function(args, opt_ignore, opt_result) {
   return result;
 };
 
+
+noh.arr = {};
+
+
 /**
  * Inserts one array elements to the other array (at the end).
  * @param {Array} arrIn The source array.
@@ -205,7 +209,7 @@ noh.organize = function(args, opt_ignore, opt_result) {
  * @return {number} New length of the destination array.
  * TODO: do we need it now at all?
  */
-noh.pushArray = function(arrIn, arrOut) {
+noh.arr.push = function(arrIn, arrOut) {
   return arrOut.push.apply(arrOut, arrIn);
 };
 
@@ -215,7 +219,7 @@ noh.pushArray = function(arrIn, arrOut) {
  * @param {*} val A value to find in arr.
  * @param {!Array} arr Array to find the val in.
  */
-noh.indexOf = function(val, arr) {
+noh.arr.indexOf = function(val, arr) {
   for(var x = 0; x < arr.length; ++x)
     if(val == arr[x])
       return x;
@@ -232,7 +236,7 @@ noh.indexOf = function(val, arr) {
  * If arr is null, the returned object will be also null.
  * TODO: do we need it now at all?
  */
-noh.cnvArrayToObject = function(records, arr) {
+noh.arr.arr2obj = function(records, arr) {
   if(arr === null) return null;
   var obj = {};
   for(var x = 0; x < records.length; ++x)
@@ -248,7 +252,7 @@ noh.cnvArrayToObject = function(records, arr) {
  * @return {Array} An array of obj values in order defined by records parameter.
  * TODO: do we need it now at all?
  */
-noh.cnvObjectToArray = function(records, obj) {
+noh.arr.obj2arr = function(records, obj) {
   if(obj === null) return null;
   var arr = [];
   for(var x = 0; x < records.length; ++x)
@@ -261,7 +265,7 @@ noh.cnvObjectToArray = function(records, obj) {
  * @param {Object} arr An object to test.
  * @return {boolean} True if arr is an array like object
  */
-noh.isArrayLike = function(arr) {
+noh.arr.isArrayLike = function(arr) {
   var hasOwn = Object.prototype.hasOwnProperty;
   var len;
   return arr != null && ( //Here the != is intentional (we don't want to use !==)
@@ -276,6 +280,28 @@ noh.isArrayLike = function(arr) {
 };
 
 
+
+noh.str = {};
+
+/**
+ * Shorten given text to given length max.
+ * If text is too long it cuts it, and changes three last letters to "..."
+ * @param {string} text
+ * @param {number} maxlen
+ * @return {string} shortened text
+ */
+noh.str.limitlen = function(text, maxlen) {
+  if(text.length > maxlen) 
+    text = text.substr(0, maxlen-3) + "...";
+  return text;
+};
+
+noh.str.forcelen = function(text, len) {
+  text = noh.str.limitlen(text, len);
+  while(text.length < len)
+    text += ' ';
+  return text;
+};
 
 /**
  * A base constructor for Node objects. This is base "class" for all UI objects created by NOH.
@@ -859,7 +885,9 @@ noh.Reel = function(lines, width, height, var_args) {
   this.chksize();
 
   var this_ = this;
-  this.$.show(function() {this_.rotate(0);}); // to update positions and size
+  this.$.show(function() {
+    this_.update();
+  });
   this.selected_ = -1;
 };
 
@@ -878,6 +906,9 @@ noh.Reel.prototype.selected = function() { return this.selected_; };
 noh.Reel.prototype.select = function(nr) {
   if((nr < -1) || (nr >= this.length))
     nr = -1;
+
+  if(this.selected_ == nr)
+    return this;
 
   if(this.selected_ != -1)
     this.getelem(this.selected_).remclass("selected");
@@ -1063,7 +1094,7 @@ noh.reel = function(lines, width, height, var_args) {
  */
 noh.fancy = function(element, opt_options) {
   element.addclass("fancy");
-  if(noh.indexOf(element.tag, ["h1", "h2", "h3", "h4"]) != -1) {
+  if(noh.arr.indexOf(element.tag, ["h1", "h2", "h3", "h4"]) != -1) {
     element.on("click", function() { this.noh.scroll(); });
   }
   return element;
@@ -1082,7 +1113,7 @@ noh.ukbd = function(atext) {
   var url = /(https?|ftp):\/\//;
   var map = words.map(function(word) {
     if(url.test(word))
-      return a({href:word}, word);
+      return a({href:word, target:"_blank"}, word);
     else
       return " " + word + " ";
   });
@@ -1091,19 +1122,47 @@ noh.ukbd = function(atext) {
 
 
 
+
+
+
+
+
+
+noh.log = {};
+
+
+
+
+/** @typedef {!ArrayLike.<*>} */
+noh.log.Data; //FIXME: how to express ArrayLike type?
+
+
+/**
+ * @param {noh.log.Data} data
+ * @return {string}
+ */
+noh.log.data2str = function(data) {
+  var str = "";
+  if(data.length > 0)
+    str += data[0];
+  for(var i = 1; i < data.length; ++i)
+    str = str + " " + data[i].toString();  
+  return str;
+};
+
 /**
  * @interface
  * This is basic interface for loggers.
  */
-noh.ILogger = function() {};
+noh.log.ILogger = function() {};
 
 
 /**
  * Logs given data with given severity
  * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
- * @param {!Array.<*>} data Data to log. It has to be an array like object.
+ * @param {noh.log.Data} data Data to log. It has to be an array like object.
  */
-noh.ILogger.prototype.log = function(classes, data) {};
+noh.log.ILogger.prototype.log = function(classes, data) {};
 
 
 
@@ -1112,13 +1171,13 @@ noh.ILogger.prototype.log = function(classes, data) {};
 /**
  * Little (one line) logger.
  * @constructor
- * @implements {noh.ILogger}
+ * @implements {noh.log.ILogger}
  */
-noh.LLogger = function() {
-  noh.Element.call(this, "div", {class: 'noh little logger'});
+noh.log.Little = function() {
+  noh.Element.call(this, "div", {class: 'noh log little'});
 };
 
-noh.LLogger.prototype = new noh.Element("div");
+noh.log.Little.prototype = new noh.Element("div");
 
 /**
 /**
@@ -1126,40 +1185,36 @@ noh.LLogger.prototype = new noh.Element("div");
  * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
  * @param {!Array.<*>} data Data to log. It has to be an array like object.
  */
-noh.LLogger.prototype.log = function(classes, data) { 
+noh.log.Little.prototype.log = function(classes, data) { 
   if(this.length)
     this.rem(); // removes last (in this case only one) child.
-  var line = "";
-  if(data.length > 0)
-    line += data[0];
-  for(var i = 1; i < data.length; ++i)
-    line = line + ", " + data[i].toString();  
-  var ukbd = noh.ukbd(line).addclass(classes); //TODO: play with this .toString()
+  var ukbd = noh.ukbd(noh.log.data2str(data)).addclass(classes);
   this.add(ukbd);
 };
 
 
+/**
+ * Little (one line) logger.
+ * @return {!noh.log.ILogger}
+ */
+noh.log.little = function() {
+  return new noh.log.Little();
+};
 
 
 /**
- * Little (one line) logger.
- * @implements {ILogger}
+ * Sleepy little logger
+ * @param {number=} opt_duration How many miliseconds will it be visible. See {@linkcode noh.sleepy}
+ * @return {!noh.log.ILogger}
  */
-noh.llogger = function() {
-  return new noh.LLogger();
+noh.log.slittle = function(opt_duration) {
+  var little = noh.log.little();
+  var slittle = noh.sleepy(little, opt_duration);
+  slittle.log_ = slittle.log;
+  slittle.log = function(classes, data) { this.log_(classes, data); this.wake(); };
+  return slittle;
 };
 
-
-noh.sllogger = function(opt_duration) {
-  var llogger = noh.llogger();
-  var sllogger = noh.sleepy(llogger, opt_duration);
-  sllogger.log_ = sllogger.log;
-  sllogger.log = function(classes, data) { this.log_(classes, data); this.wake(); };
-  return sllogger;
-};
-
-
-noh.plogger = function() { return noh.h3("TODO"); };
 
 
 
@@ -1172,31 +1227,31 @@ noh.plogger = function() { return noh.h3("TODO"); };
  * It just allows to log messages with three different severity levels:
  * "info", "warn", "error" (and "log" which is the same as "info")
  */
-noh.IConsole = function() {};
+noh.log.IConsole = function() {};
 
 /**
  * Logs given data with default (general) severity. Usually this is the same as "info"
  * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
  */
-noh.IConsole.prototype.log = function(var_args) {};
+noh.log.IConsole.prototype.log = function(var_args) {};
 
 /**
  * Logs given data with "info" (normal) severity. Usually this is the same as "log"
  * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
  */
-noh.IConsole.prototype.info = function(var_args) {};
+noh.log.IConsole.prototype.info = function(var_args) {};
 
 /**
  * Logs given data with "warn" (warning) severity. Usually this severity is marked somehow (like bold font), but not with red color.
  * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
  */
-noh.IConsole.prototype.warn = function(var_args) {};
+noh.log.IConsole.prototype.warn = function(var_args) {};
 
 /**
  * Logs given data with "error" severity. Usually this severity is highlighted (f.e. with red bold font).
  * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
  */
-noh.IConsole.prototype.error = function(var_args) {};
+noh.log.IConsole.prototype.error = function(var_args) {};
 
 
 
@@ -1206,9 +1261,9 @@ noh.IConsole.prototype.error = function(var_args) {};
  * This console can be then installed as global console object (window.console), so all system logs will be logged using given logger.
  * @implements {noh.IConsole}
  * @constructor
- * @param {!noh.ILogger} logger A logger to wrap.
+ * @param {!noh.log.ILogger} logger A logger to wrap.
  */
-noh.LConsole = function(logger) {
+noh.log.L2C = function(logger) {
   this.logger = logger;
 };
 
@@ -1217,42 +1272,42 @@ noh.LConsole = function(logger) {
  * Logs given data with default (general) severity. This is the same as "info"
  * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
  */
-noh.LConsole.prototype.log = function(var_args) { this.logger.log("info", arguments); };
+noh.log.L2C.prototype.log = function(var_args) { this.logger.log("info", arguments); };
 
 /**
  * Logs given data with "info" (normal) severity.
- * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
  */
-noh.LConsole.prototype.info = function(var_args) { this.logger.log("info", arguments); };
+noh.log.L2C.prototype.info = function(var_args) { this.logger.log("info", arguments); };
 
 /**
  * Logs given data with "warn" (warning) severity. Usually this severity is marked somehow (like bold font), but not with red color.
- * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
  */
-noh.LConsole.prototype.warn = function(var_args) { this.logger.log("warning", arguments); };
+noh.log.L2C.prototype.warn = function(var_args) { this.logger.log("warning", arguments); };
 
 /**
  * Logs given data with "error" severity. Usually this severity is highlighted (f.e. with red bold font).
- * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
  */
-noh.LConsole.prototype.error = function(var_args) { this.logger.log("error", arguments); };
+noh.log.L2C.prototype.error = function(var_args) { this.logger.log("error", arguments); };
 
-noh.LConsole.prototype.debug = function(var_args) { this.logger.log("debug", arguments); };
+noh.log.L2C.prototype.debug = function(var_args) { this.logger.log("debug", arguments); };
 
 /**
  * Installs this console as a global console object.
  */
-noh.LConsole.prototype.install = function() { window.console = this; };
+noh.log.L2C.prototype.install = function() { window.console = this; };
 
 
 /**
  * Wraps an ILogger object into IConsole.
  * This console can be then installed as global console object (window.console), so all system logs will be logged using given logger.
- * @param {!ILogger} logger
- * @return {!IConsole}
+ * @param {!noh.log.ILogger} logger
+ * @return {!noh.log.IConsole}
  */
-noh.lconsole = function(logger) {
-  return new noh.LConsole(logger);  
+noh.log.l2c = function(logger) {
+  return new noh.log.L2C(logger);  
 };
 
 
@@ -1264,9 +1319,9 @@ noh.lconsole = function(logger) {
  * Wraps an IConsole object into ILogger.
  * @implements {noh.ILogger}
  * @constructor
- * @param {!noh.IConsole} console A console to wrap.
+ * @param {!noh.log.IConsole} console A console to wrap.
  */
-noh.CLogger = function(console) {
+noh.log.C2L = function(console) {
   this.console = console;
 };
 
@@ -1275,7 +1330,7 @@ noh.CLogger = function(console) {
  * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
  * @param {!Array.<*>} data Data to log. It has to be an array like object.
  */
-noh.CLogger.prototype.log = function(classes, data) {
+noh.log.C2L.prototype.log = function(classes, data) {
   if(/error/.test(classes))
     this.console.error.apply(this.console, data);
   else if(/warning/.test(classes))
@@ -1289,11 +1344,11 @@ noh.CLogger.prototype.log = function(classes, data) {
 
 /**
  * Wraps an IConsole object into ILogger.
- * @param {!IConsole} console
- * @return {!ILogger}
+ * @param {!noh.log.IConsole} console
+ * @return {!noh.log.ILogger}
  */
-noh.clogger = function(console) {
-  return new noh.CLogger(console);
+noh.log.c2l = function(console) {
+  return new noh.log.C2L(console);
 };
 
 
@@ -1301,15 +1356,15 @@ noh.clogger = function(console) {
 
 /**
  * Creates a logger that logs on all provided loggers.
- * @implements {noh.ILogger}
+ * @implements {noh.log.ILogger}
  * @constructor
- * @param {Array.<!noh.ILogger>} loggers
+ * @param {Array.<!noh.log.ILogger>} loggers
  */
-noh.MLogger = function(loggers) {
+noh.log.Multi = function(loggers) {
   this.loggers = loggers;
 };
 
-noh.MLogger.prototype.log = function(classes, data) {
+noh.log.Multi.prototype.log = function(classes, data) {
   for(var i = 0; i < this.loggers.length; ++i)
     this.loggers[i].log(classes, data);
 };
@@ -1318,9 +1373,83 @@ noh.MLogger.prototype.log = function(classes, data) {
  * @param {Array.<!noh.ILogger>} loggers
  * @return {!noh.ILogger}
  */
-noh.mlogger = function(loggers) {
-  return new noh.MLogger(loggers);
+noh.log.multi = function(loggers) {
+  return new noh.log.Multi(loggers);
 };
+
+
+
+/**
+ * Creates a logger that filters every message first (through provided filter function),
+ * and then logs the result.
+ * @implements {noh.log.ILogger}
+ * @constructor
+ * @param {!noh.log.ILogger} logger
+ * @param {function(noh.log.Data):noh.log.Data} filter
+ */
+noh.log.Filter = function(logger, filter) {
+  this.logger = logger;
+  this.filter = filter;
+};
+
+noh.log.Filter.prototype.log = function(classes, data) {
+  this.logger.log(classes, this.filter(data));
+};
+
+/**
+ * @param {!noh.log.ILogger} logger
+ * @param {function(noh.log.Data):noh.log.Data} filter
+ * @return {!noh.ILogger}
+ */
+noh.log.filter = function(logger, filter) {
+  return new noh.log.Filter(logger, filter);
+};
+
+
+
+/**
+ * TODO: description
+ * @param {!noh.log.ILogger} logger
+ * @return {!noh.ILogger}
+ */
+noh.log.addtime = function(logger) {
+  var filter = function(data) {
+    var now = new Date();
+    var time = "[" + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + "]";
+    return [time].concat(Array.prototype.slice.call(data, 0));
+  };
+  return noh.log.filter(logger, filter);
+};
+
+
+
+
+
+/**
+ * Creates a logger that uses Reel to rotate log lines.
+ * @param {number} lines Number of visible lines.
+ * @param {number=} opt_duration How many miliseconds will any log line be visible. See {@linkcode noh.log.slittle}
+ * @return {!noh.log.ILogger}
+ */
+noh.log.reel = function(lines, opt_duration) {
+  //TODO: validation of lines value in debug mode
+  var length = lines * 2 + 1;
+  var duration = opt_duration === undefined ? 10000 : opt_duration;
+  var loggers = [];
+  for(var i = 0; i < length; ++i)
+    loggers.push(noh.log.slittle(duration));
+  var reel = noh.reel(lines, "automatic", "automatic", loggers);
+  reel.select(lines-1);
+  logger = noh.div({class: "noh log reel"}, reel);
+  logger.reel = reel;
+  logger.log = function(classes, data) {
+    var logger = this.reel.getelem(this.reel.lines)[0]; // This is first invisible logger
+    logger.log(classes, data);
+    this.reel.rotate(-1);
+  };
+  return logger;
+};
+
 
 
 

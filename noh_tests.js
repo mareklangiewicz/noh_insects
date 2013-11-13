@@ -316,14 +316,16 @@ function get_test_logger(logger) {
   var log2 = a(style, 'logger.log("warning", ["dupa warning"])');
   var log3 = a(style, 'logger.log("error", ["dupa error", "dupa error2", 3, 4, window])');
   var log4 = a(style, 'logger.log("info warning", ["dupa info warning"])');
-  var install = a(style, 'noh.lconsole(logger).install()');
+  var install = a(style, 'noh.log.l2c(logger).install()');
+  var install2 = a(style, 'noh.log.l2c(noh.log.addtime(logger)).install()');
   var addsmooth = a(style, 'logger.parent.addclass("smooth")');
   var remsmooth = a(style, 'logger.parent.remclass("smooth")');
   log1.$.click(function() { logger.log("info", ["dupa info"]); });
   log2.$.click(function() { logger.log("warning", ["dupa warning"]); });
   log3.$.click(function() { logger.log("error", ["dupa error", "dupa error2", 3, 4, window]); });
   log4.$.click(function() { logger.log("info warning", ["dupa info warning"]); });
-  install.$.click(function() { noh.lconsole(logger).install(); });
+  install.$.click(function() { noh.log.l2c(logger).install(); });
+  install2.$.click(function() { noh.log.l2c(noh.log.addtime(logger)).install(); });
   addsmooth.$.click(function() {logger.parent.addclass("smooth")});
   remsmooth.$.click(function() {logger.parent.remclass("smooth")});
   return div(
@@ -334,25 +336,32 @@ function get_test_logger(logger) {
     addsmooth, br(),
     remsmooth, br(),
     install, br(),
+    install2, br(),
     noh.table1r({style:"border: 6px ridge green"},
       td(logger)
     )
   );
 }
 
-tests.sllogger = function() {
-  var sllogger = noh.sllogger(3000);
-  return get_test_logger(sllogger);
+tests.log_slittle = function() {
+  var slittle = noh.log.slittle(3000);
+  return get_test_logger(slittle);
 };
 
-tests.slloggers = function() {
-  var sllogger1 = noh.sllogger(1000);
-  var sllogger2 = noh.sllogger(2000);
-  var sllogger3 = noh.sllogger(3000);
-  var clogger = noh.clogger(window.console);
-  var mlogger = noh.mlogger([sllogger1, sllogger2, sllogger3, clogger]);
-  var all = div(sllogger1, sllogger2, sllogger3);
-  all.log = function(classes, data) { mlogger.log(classes, data); };
+tests.log_multi = function() {
+  var slittle1 = noh.log.slittle(1000);
+  var slittle2 = noh.log.slittle(2000);
+  var slittle3 = noh.log.slittle(3000);
+  var c2l = noh.log.c2l(window.console);
+  var multi = noh.log.multi([slittle1, slittle2, slittle3, c2l]);
+  var all = div(slittle1, slittle2, slittle3);
+  all.log = function(classes, data) { multi.log(classes, data); };
   return get_test_logger(all);
 };
+
+tests.log_reel = function() {
+  var rlogger = noh.log.reel(15);
+  return get_test_logger(rlogger);
+};
+
 
