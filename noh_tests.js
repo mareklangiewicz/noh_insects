@@ -213,6 +213,11 @@ function gen_test_reel(reel) {
   var rotatem3 = a(style, "reel.rotate(-3)");
   var spin20 = a(style, 'reel.spin(20)');
   var spinback = a(style, 'reel.spin(-12, -4, 100)');
+  var update1 = a(style, 'reel.update(1)'); 
+  var update2 = a(style, 'reel.update(2)'); 
+  var update3 = a(style, 'reel.update(3)'); 
+  var update5 = a(style, 'reel.update(5)'); 
+  var update7 = a(style, 'reel.update(7)'); 
   addsmooth.$.click(function() {reel.parent.addclass("smooth")});
   remsmooth.$.click(function() {reel.parent.remclass("smooth")});
   addfast.$.click(function() {reel.parent.addclass("fast")});
@@ -231,6 +236,11 @@ function gen_test_reel(reel) {
   rotatem3.$.click(function() {reel.rotate(-3)});
   spin20.$.click(function() {reel.spin(20)});
   spinback.$.click(function() {reel.spin(-12, -4, 100)});
+  update1.$.click(function() {reel.update(1);});
+  update2.$.click(function() {reel.update(2);});
+  update3.$.click(function() {reel.update(3);});
+  update5.$.click(function() {reel.update(5);});
+  update7.$.click(function() {reel.update(7);});
   return div(
     addsmooth,
     remsmooth, br(),
@@ -249,7 +259,12 @@ function gen_test_reel(reel) {
     rotatem2,
     rotatem3, br(),
     spin20,
-    spinback,
+    spinback, br(),
+    update1,
+    update2,
+    update3,
+    update5,
+    update7,
     div(noh.table1r(td({style:"border: 6px ridge green"}, reel)))
   );
 }
@@ -295,24 +310,22 @@ tests.kbd = function() {
   return div(noh.ukbd("fjdkl http://www.google.pl google fjsdk ftp://blabal fjdsl http://mareklangiewicz.pl fds fjdsklfds"));
 };
 
-
-tests.sllogger = function() {
-  var sllogger = noh.sllogger(3000);
+function get_test_logger(logger) {
   var style = {"class":"noh link", style:"padding: 5px"};
-  var log1 = a(style, 'sllogger.log("info", ["dupa info"])');
-  var log2 = a(style, 'sllogger.log("warning", ["dupa warning"])');
-  var log3 = a(style, 'sllogger.log("error", ["dupa error", "dupa error2", 3, 4, window])');
-  var log4 = a(style, 'sllogger.log("info warning", ["dupa info warning"])');
-  var install = a(style, 'noh.console(sllogger).install()');
-  var addsmooth = a(style, 'sllogger.parent.addclass("smooth")');
-  var remsmooth = a(style, 'sllogger.parent.remclass("smooth")');
-  log1.$.click(function() { sllogger.log("info", ["dupa info"]); });
-  log2.$.click(function() { sllogger.log("warning", ["dupa warning"]); });
-  log3.$.click(function() { sllogger.log("error", ["dupa error", "dupa error2", 3, 4, window]); });
-  log4.$.click(function() { sllogger.log("info warning", ["dupa info warning"]); });
-  install.$.click(function() { noh.console(sllogger).install(); });
-  addsmooth.$.click(function() {sllogger.parent.addclass("smooth")});
-  remsmooth.$.click(function() {sllogger.parent.remclass("smooth")});
+  var log1 = a(style, 'logger.log("info", ["dupa info"])');
+  var log2 = a(style, 'logger.log("warning", ["dupa warning"])');
+  var log3 = a(style, 'logger.log("error", ["dupa error", "dupa error2", 3, 4, window])');
+  var log4 = a(style, 'logger.log("info warning", ["dupa info warning"])');
+  var install = a(style, 'noh.lconsole(logger).install()');
+  var addsmooth = a(style, 'logger.parent.addclass("smooth")');
+  var remsmooth = a(style, 'logger.parent.remclass("smooth")');
+  log1.$.click(function() { logger.log("info", ["dupa info"]); });
+  log2.$.click(function() { logger.log("warning", ["dupa warning"]); });
+  log3.$.click(function() { logger.log("error", ["dupa error", "dupa error2", 3, 4, window]); });
+  log4.$.click(function() { logger.log("info warning", ["dupa info warning"]); });
+  install.$.click(function() { noh.lconsole(logger).install(); });
+  addsmooth.$.click(function() {logger.parent.addclass("smooth")});
+  remsmooth.$.click(function() {logger.parent.remclass("smooth")});
   return div(
     log1, br(),
     log2, br(),
@@ -322,8 +335,24 @@ tests.sllogger = function() {
     remsmooth, br(),
     install, br(),
     noh.table1r({style:"border: 6px ridge green"},
-      td(sllogger)
+      td(logger)
     )
   );
+}
+
+tests.sllogger = function() {
+  var sllogger = noh.sllogger(3000);
+  return get_test_logger(sllogger);
+};
+
+tests.slloggers = function() {
+  var sllogger1 = noh.sllogger(1000);
+  var sllogger2 = noh.sllogger(2000);
+  var sllogger3 = noh.sllogger(3000);
+  var clogger = noh.clogger(window.console);
+  var mlogger = noh.mlogger([sllogger1, sllogger2, sllogger3, clogger]);
+  var all = div(sllogger1, sllogger2, sllogger3);
+  all.log = function(classes, data) { mlogger.log(classes, data); };
+  return get_test_logger(all);
 };
 

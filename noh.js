@@ -964,9 +964,14 @@ noh.Reel.prototype.getelem = function(nr) {
 
 /**
  * Update the reel properties like size, elements positions, CSS classes etc.
+ * @param {number} opt_lines Optionally we can change the number of visible elements.
  * @return {!noh.Reel} this (for chaining)
  */
-noh.Reel.prototype.update = function() {
+noh.Reel.prototype.update = function(opt_lines) {
+
+  if(opt_lines !== undefined)
+    this.lines = opt_lines;
+  //TODO: check opt_lines value in debug mode
 
   this.chksize();
 
@@ -1103,14 +1108,6 @@ noh.ILogger.prototype.log = function(classes, data) {};
 
 
 
-/**
- * @param {Array.<!noh.ILogger>} loggers
- * @return {!noh.ILogger}
- */
-noh.multilogger = function(loggers) {
-  //TODO
-};
-
 
 /**
  * Little (one line) logger.
@@ -1211,7 +1208,7 @@ noh.IConsole.prototype.error = function(var_args) {};
  * @constructor
  * @param {!noh.ILogger} logger A logger to wrap.
  */
-noh.Console = function(logger) {
+noh.LConsole = function(logger) {
   this.logger = logger;
 };
 
@@ -1220,32 +1217,32 @@ noh.Console = function(logger) {
  * Logs given data with default (general) severity. This is the same as "info"
  * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
  */
-noh.Console.prototype.log = function(var_args) { this.logger.log("info", arguments); };
+noh.LConsole.prototype.log = function(var_args) { this.logger.log("info", arguments); };
 
 /**
  * Logs given data with "info" (normal) severity.
  * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
  */
-noh.Console.prototype.info = function(var_args) { this.logger.log("info", arguments); };
+noh.LConsole.prototype.info = function(var_args) { this.logger.log("info", arguments); };
 
 /**
  * Logs given data with "warn" (warning) severity. Usually this severity is marked somehow (like bold font), but not with red color.
  * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
  */
-noh.Console.prototype.warn = function(var_args) { this.logger.log("warning", arguments); };
+noh.LConsole.prototype.warn = function(var_args) { this.logger.log("warning", arguments); };
 
 /**
  * Logs given data with "error" severity. Usually this severity is highlighted (f.e. with red bold font).
  * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
  */
-noh.Console.prototype.error = function(var_args) { this.logger.log("error", arguments); };
+noh.LConsole.prototype.error = function(var_args) { this.logger.log("error", arguments); };
 
-noh.Console.prototype.debug = function(var_args) { this.logger.log("debug", arguments); };
+noh.LConsole.prototype.debug = function(var_args) { this.logger.log("debug", arguments); };
 
 /**
  * Installs this console as a global console object.
  */
-noh.Console.prototype.install = function() { window.console = this; };
+noh.LConsole.prototype.install = function() { window.console = this; };
 
 
 /**
@@ -1254,13 +1251,76 @@ noh.Console.prototype.install = function() { window.console = this; };
  * @param {!ILogger} logger
  * @return {!IConsole}
  */
-noh.console = function(logger) {
-  return new noh.Console(logger);  
+noh.lconsole = function(logger) {
+  return new noh.LConsole(logger);  
 };
 
 
 
 
+
+
+/**
+ * Wraps an IConsole object into ILogger.
+ * @implements {noh.ILogger}
+ * @constructor
+ * @param {!noh.IConsole} console A console to wrap.
+ */
+noh.CLogger = function(console) {
+  this.console = console;
+};
+
+/**
+ * Logs given data with given severity
+ * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
+ * @param {!Array.<*>} data Data to log. It has to be an array like object.
+ */
+noh.CLogger.prototype.log = function(classes, data) {
+  if(/error/.test(classes))
+    this.console.error.apply(this.console, data);
+  else if(/warning/.test(classes))
+    this.console.warn.apply(this.console, data);
+  else if( (/debug/.test(classes)) && (this.console.debug instanceof Function) )
+    this.console.debug.apply(this.console, data);
+  else
+    this.console.info.apply(this.console, data);
+};
+
+
+/**
+ * Wraps an IConsole object into ILogger.
+ * @param {!IConsole} console
+ * @return {!ILogger}
+ */
+noh.clogger = function(console) {
+  return new noh.CLogger(console);
+};
+
+
+
+
+/**
+ * Creates a logger that logs on all provided loggers.
+ * @implements {noh.ILogger}
+ * @constructor
+ * @param {Array.<!noh.ILogger>} loggers
+ */
+noh.MLogger = function(loggers) {
+  this.loggers = loggers;
+};
+
+noh.MLogger.prototype.log = function(classes, data) {
+  for(var i = 0; i < this.loggers.length; ++i)
+    this.loggers[i].log(classes, data);
+};
+
+/**
+ * @param {Array.<!noh.ILogger>} loggers
+ * @return {!noh.ILogger}
+ */
+noh.mlogger = function(loggers) {
+  return new noh.MLogger(loggers);
+};
 
 
 
