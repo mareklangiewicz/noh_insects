@@ -593,6 +593,55 @@ noh.srccode = function(afunction) {
 
 
 /**
+ * This Element will fly over the page (position:fixed). User should some CSS classes to it:
+ * "left" or "right" and "top" or "bottom" (but never: "left" and "right" or "top" and "bottom")
+ * It will stick to given screen side automaticly (with some little margin)
+ * and it can be swept away to nearest side using .hide() method; and brought back using the .show() method().
+ * It should be under element with "smooth" class so it moves smoothly.
+ * If user fails to add some position related classes to it, he can still manage the overlay position by hand.
+ * Note: it is a good idea for overlay's children to have CSS class "pretty" so it will get some pretty default styles
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes.
+ * @return {!noh.Element} A new overlay.
+ */
+noh.overlay = function(var_args) {
+
+  var overlay = noh.div(arguments).addclass("noh overlay");
+  
+  overlay.show = function() {
+    if(this.hasclass("left"))
+      this.css("left", ""); // determined by the CSS rule
+    if(this.hasclass("right"))
+      this.css("right", ""); // determined by the CSS rule
+    if(this.hasclass("top"))
+      this.css("top", ""); // determined by the CSS rule
+    if(this.hasclass("bottom"))
+      this.css("bottom", ""); // determined by the CSS rule
+    this.remclass("hidden").addclass("visible");
+    return this;
+  };
+
+  overlay.hide = function() {
+    var w = this.$.width();
+    var h = this.$.height();
+    if(this.hasclass("left"))
+      this.css("left", "" + (-w-50) + "px");
+    else if(this.hasclass("right"))
+      this.css("right", "" + (-w-50) + "px");
+    else if(this.hasclass("top"))
+      this.css("top", "" + (-h-50) + "px");
+    else if(this.hasclass("bottom"))
+      this.css("bottom", "" + (-h-50) + "px");
+    this.remclass("visible").addclass("hidden");
+    return this;
+  };
+
+  return overlay;
+};
+
+
+
+
+/**
  * Makes given element sleepy. By default it is in "asleep" state (it has the "asleep" CSS class)
  * If we wake it (method: wake) it will be awake (will have the "awake" CSS class) for some time.
  * Then it will fall asleep again (the "awake" CSS class is removed, and it gets "asleep" CSS class).
@@ -1181,7 +1230,7 @@ noh.log.Little.prototype = new noh.Element("div");
 noh.log.Little.prototype.log = function(classes, data) { 
   if(this.length)
     this.rem(); // removes last (in this case only one) child.
-  var ukbd = noh.ukbd(noh.log.data2str(data)).addclass(classes);
+  var ukbd = noh.ukbd(noh.log.data2str(data)).addclass("noh log element").addclass(classes);
   this.add(ukbd);
 };
 
@@ -1456,38 +1505,15 @@ noh.log.reel = function(lines, opt_duration) {
     logger.log(classes, data);
     this.reel.rotate(-1);
   };
-  return logger;
-};
-
-
-/**
- * Creates pretty logger that uses Reel to rotate log lines.
- * It can reduce lines to 3 when clicked by user.
- * @param {number} lines Number of visible lines.
- * @param {number} chars Max number of characters for each line. (has to be more than 3)
- * @param {number=} opt_duration How many miliseconds will any log line be visible. See {@linkcode noh.log.slittle}
- * @return {!noh.log.ILogger}
- */
-noh.log.pretty = function(lines, chars, opt_duration) {
-  var logger = noh.log.reel(lines, opt_duration).addclass("pretty");
-
-
-  logger.install = function() {
-    var clogger = noh.log.c2l(window.console);
-    var mlogger = noh.log.multi([clogger, this]);
-    var tlogger = noh.log.addtime(mlogger);
-    var flogger = noh.log.limitlen(tlogger, chars);
-    var mconsole = noh.log.l2c(flogger);
-    mconsole.install();
+  logger.setlines = function(lines) {
+    var r = lines - this.reel.lines;
+    this.reel.lines = lines;
+    this.reel.rotate(r);
   };
-
-  logger.on("click", function() {
-    logger.reel.lines = logger.reel.lines == 3 ? lines : 3;
-    logger.reel.rotate((logger.reel.lines == 3) ? 3-lines : lines-3);
-  });
-
   return logger;
 };
+
+
 
 
 

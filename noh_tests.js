@@ -105,6 +105,78 @@ tests.srccode = function() {
   return noh.srccode(tests.srccode);
 };
 
+
+tests.overlay = function() {
+  var content1 = div({style:"margin: 10px; color: green; font-size: xx-large"}, " overlay BLEBLE", br(), "BLUBLU").addclass("pretty");
+  var content2 = div({style:"margin: 10px; color: blue; font-size: x-large"}, " overlay BLEBLE", br(), "BLUBLU").addclass("pretty");
+  var content3 = div({style:"margin: 30px; color: red; font-size: large"}, " overlay", br(), "BLU").addclass("pretty");
+  var overlay = noh.overlay(content1, content2, content3).addclass("left top");
+  overlay.hide();
+  var style = {"class":"noh link", style:"padding: 5px"};
+  var show = a(style, 'overlay.show()');
+  var hide = a(style, 'overlay.hide()');
+  var addsmooth = a(style, 'overlay.parent.addclass("smooth")');
+  var remsmooth = a(style, 'overlay.parent.remclass("smooth")');
+  var tobottom = a(style, 'overlay.remclass("top").addclass("bottom")');
+  var totop = a(style, 'overlay.remclass("bottom").addclass("top")');
+  show.$.click(function() {overlay.show()});
+  hide.$.click(function() {overlay.hide()});
+  addsmooth.$.click(function() {overlay.parent.addclass("smooth")});
+  remsmooth.$.click(function() {overlay.parent.remclass("smooth")});
+  tobottom.$.click(function() {overlay.remclass("top").addclass("bottom")});
+  totop.$.click(function() {overlay.remclass("bottom").addclass("top")});
+  return div(
+    show, hide, br(),
+    addsmooth,
+    remsmooth, br(),
+    tobottom,
+    totop,
+    noh.table1r({style:"border: 6px ridge green"},
+      td(overlay)
+    )
+  );
+};
+
+
+tests.overlay2 = function() {
+  var content1 = div({style:"margin: 10px; color: green; font-size: xx-large"}, " overlay BLEBLE", br(), "BLUBLU").addclass("pretty");
+  var content2 = div({style:"margin: 10px; color: blue; font-size: x-large"}, " overlay BLEBLE", br(), "BLUBLU").addclass("pretty");
+  var content3 = div({style:"margin: 30px; color: red; font-size: large"}, " overlay", br(), "BLU").addclass("pretty");
+  var overlay = noh.overlay(content1, content2, content3).addclass("bottom"); //We will control left/right position by hand
+  overlay.hide().css("right", "10px");
+  var style = {"class":"noh link", style:"padding: 5px"};
+  var show = a(style, 'overlay.show()');
+  var hide = a(style, 'overlay.hide()');
+  var addsmooth = a(style, 'overlay.parent.addclass("smooth")');
+  var remsmooth = a(style, 'overlay.parent.remclass("smooth")');
+  var tobottom = a(style, 'overlay.remclass("top").addclass("bottom")');
+  var totop = a(style, 'overlay.remclass("bottom").addclass("top")');
+  var right1 = a(style, 'overlay.css("right", "30px")');
+  var right2 = a(style, 'overlay.css("right", "130px")');
+  var right3 = a(style, 'overlay.css("right", "230px")');
+  show.$.click(function() {overlay.show()});
+  hide.$.click(function() {overlay.hide()});
+  addsmooth.$.click(function() {overlay.parent.addclass("smooth")});
+  remsmooth.$.click(function() {overlay.parent.remclass("smooth")});
+  tobottom.$.click(function() {overlay.remclass("top").addclass("bottom")});
+  totop.$.click(function() {overlay.remclass("bottom").addclass("top")});
+  right1.$.click(function() {overlay.css("right", "30px")});
+  right2.$.click(function() {overlay.css("right", "130px")});
+  right3.$.click(function() {overlay.css("right", "230px")});
+  return div(
+    show, hide, br(),
+    addsmooth,
+    remsmooth, br(),
+    tobottom,
+    totop, br(),
+    right1, right2, right3,
+    noh.table1r({style:"border: 6px ridge green"},
+      td(overlay)
+    )
+  );
+};
+
+
 tests.sleepy = function() {
   var content = div({style:"color: green; font-size: xx-large"}, " sleepy BLEBLE", br(), "BLUBLU");
   var sleepy = noh.sleepy(content, 2000);
@@ -320,6 +392,10 @@ function get_test_logger(logger) {
   var install2 = a(style, 'noh.log.l2c(noh.log.addtime(logger)).install()');
   var addsmooth = a(style, 'logger.parent.addclass("smooth")');
   var remsmooth = a(style, 'logger.parent.remclass("smooth")');
+  var addpretty = a(style, 'logger.addclass("pretty")');
+  var rempretty = a(style, 'logger.remclass("pretty")');
+  var setlines5 = a(style, 'logger.setlines(5)');
+  var setlines9 = a(style, 'logger.setlines(9)');
   log1.$.click(function() { logger.log("info", ["dupa info"]); });
   log2.$.click(function() { logger.log("warning", ["dupa warning"]); });
   log3.$.click(function() { logger.log("error", ["dupa error", "dupa error2", 3, 4, window]); });
@@ -328,15 +404,20 @@ function get_test_logger(logger) {
   install2.$.click(function() { noh.log.l2c(noh.log.forcelen(noh.log.addtime(logger), 20)).install(); });
   addsmooth.$.click(function() {logger.parent.addclass("smooth")});
   remsmooth.$.click(function() {logger.parent.remclass("smooth")});
+  addpretty.$.click(function() {logger.addclass("pretty")});
+  rempretty.$.click(function() {logger.remclass("pretty")});
+  setlines5.$.click(function() {logger.setlines(5)});
+  setlines9.$.click(function() {logger.setlines(9)});
   return div(
     log1, br(),
     log2, br(),
     log3, br(),
     log4, br(),
-    addsmooth, br(),
-    remsmooth, br(),
+    addsmooth, remsmooth, br(),
+    addpretty, rempretty, br(),
     install, br(),
     install2, br(),
+    setlines5, setlines9, br(),
     noh.table1r({style:"border: 6px ridge green"},
       td(logger)
     )
@@ -365,13 +446,25 @@ tests.log_reel = function() {
 };
 
 
-tests.log_pretty = function() {
+tests.log_install = function() {
+  var install = function(logger) {
+    noh.log.l2c(
+      noh.log.limitlen(
+        noh.log.addtime(
+          noh.log.multi([
+            noh.log.c2l(window.console),
+            logger
+          ])
+        ), 40
+      )
+    ).install();
+  };
   var style = {"class":"noh link", style:"padding: 5px"};
-  var install = a(style, 'logger.install(); console.log("Welcome!");');
-  var logger = noh.log.pretty(15, 50, 30000).addclass("smooth");
-  install.$.click(function() { logger.install(); console.log("Welcome!"); });
+  var binstall = a(style, 'install(logger)');
+  var logger = noh.log.reel(15, 30000).addclass("pretty smooth");
+  binstall.$.click(function() { install(logger); console.log("Welcome!"); });
   return div(
-    install,
+    binstall,
     noh.table1r({style:"border: 6px ridge green"},
       td(logger)
     )
