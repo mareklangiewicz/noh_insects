@@ -111,7 +111,7 @@ tests.overlay = function() {
   var content2 = div({style:"margin: 10px; color: blue; font-size: x-large"}, " overlay BLEBLE", br(), "BLUBLU").addclass("pretty");
   var content3 = div({style:"margin: 30px; color: red; font-size: large"}, " overlay", br(), "BLU").addclass("pretty");
   var overlay = noh.overlay(content1, content2, content3).addclass("left top");
-  overlay.hide();
+  overlay.$.click(function() {overlay.hide()});
   var style = {"class":"noh link", style:"padding: 5px"};
   var show = a(style, 'overlay.show()');
   var hide = a(style, 'overlay.hide()');
@@ -143,7 +143,8 @@ tests.overlay2 = function() {
   var content2 = div({style:"margin: 10px; color: blue; font-size: x-large"}, " overlay BLEBLE", br(), "BLUBLU").addclass("pretty");
   var content3 = div({style:"margin: 30px; color: red; font-size: large"}, " overlay", br(), "BLU").addclass("pretty");
   var overlay = noh.overlay(content1, content2, content3).addclass("bottom"); //We will control left/right position by hand
-  overlay.hide().css("right", "10px");
+  overlay.css("right", "10px");
+  overlay.$.click(function() {overlay.hide()});
   var style = {"class":"noh link", style:"padding: 5px"};
   var show = a(style, 'overlay.show()');
   var hide = a(style, 'overlay.hide()');
@@ -401,7 +402,7 @@ function get_test_logger(logger) {
   log3.$.click(function() { logger.log("error", ["dupa error", "dupa error2", 3, 4, window]); });
   log4.$.click(function() { logger.log("info warning", ["dupa info warning"]); });
   install.$.click(function() { noh.log.l2c(logger).install(); });
-  install2.$.click(function() { noh.log.l2c(noh.log.forcelen(noh.log.addtime(logger), 20)).install(); });
+  install2.$.click(function() { noh.log.l2c(noh.log.limitlen(noh.log.addtime(logger), 20)).install(); });
   addsmooth.$.click(function() {logger.parent.addclass("smooth")});
   remsmooth.$.click(function() {logger.parent.remclass("smooth")});
   addpretty.$.click(function() {logger.addclass("pretty")});
