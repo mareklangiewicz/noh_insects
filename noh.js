@@ -296,13 +296,6 @@ noh.str.limitlen = function(text, maxlen) {
   return text;
 };
 
-noh.str.forcelen = function(text, len) {
-  text = noh.str.limitlen(text, len);
-  while(text.length < len)
-    text += ' ';
-  return text;
-};
-
 /**
  * A base constructor for Node objects. This is base "class" for all UI objects created by NOH.
  * @constructor
@@ -1423,6 +1416,22 @@ noh.log.addtime = function(logger) {
 
 
 
+/**
+ * TODO: description
+ * @param {!noh.log.ILogger} logger
+ * @param {number} len
+ * @return {!noh.ILogger}
+ */
+noh.log.limitlen = function(logger, len) {
+  var filter = function(data) {
+    var str = noh.log.data2str(data);
+    return [noh.str.limitlen(str, len)];
+  };
+  return noh.log.filter(logger, filter);
+};
+
+
+
 
 
 /**
@@ -1451,6 +1460,34 @@ noh.log.reel = function(lines, opt_duration) {
 };
 
 
+/**
+ * Creates pretty logger that uses Reel to rotate log lines.
+ * It can reduce lines to 3 when clicked by user.
+ * @param {number} lines Number of visible lines.
+ * @param {number} chars Max number of characters for each line. (has to be more than 3)
+ * @param {number=} opt_duration How many miliseconds will any log line be visible. See {@linkcode noh.log.slittle}
+ * @return {!noh.log.ILogger}
+ */
+noh.log.pretty = function(lines, chars, opt_duration) {
+  var logger = noh.log.reel(lines, opt_duration).addclass("pretty");
+
+
+  logger.install = function() {
+    var clogger = noh.log.c2l(window.console);
+    var mlogger = noh.log.multi([clogger, this]);
+    var tlogger = noh.log.addtime(mlogger);
+    var flogger = noh.log.limitlen(tlogger, chars);
+    var mconsole = noh.log.l2c(flogger);
+    mconsole.install();
+  };
+
+  logger.on("click", function() {
+    logger.reel.lines = logger.reel.lines == 3 ? lines : 3;
+    logger.reel.rotate((logger.reel.lines == 3) ? 3-lines : lines-3);
+  });
+
+  return logger;
+};
 
 
 

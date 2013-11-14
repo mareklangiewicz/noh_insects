@@ -325,7 +325,7 @@ function get_test_logger(logger) {
   log3.$.click(function() { logger.log("error", ["dupa error", "dupa error2", 3, 4, window]); });
   log4.$.click(function() { logger.log("info warning", ["dupa info warning"]); });
   install.$.click(function() { noh.log.l2c(logger).install(); });
-  install2.$.click(function() { noh.log.l2c(noh.log.addtime(logger)).install(); });
+  install2.$.click(function() { noh.log.l2c(noh.log.forcelen(noh.log.addtime(logger), 20)).install(); });
   addsmooth.$.click(function() {logger.parent.addclass("smooth")});
   remsmooth.$.click(function() {logger.parent.remclass("smooth")});
   return div(
@@ -364,4 +364,17 @@ tests.log_reel = function() {
   return get_test_logger(rlogger);
 };
 
+
+tests.log_pretty = function() {
+  var style = {"class":"noh link", style:"padding: 5px"};
+  var install = a(style, 'logger.install(); console.log("Welcome!");');
+  var logger = noh.log.pretty(15, 50, 30000).addclass("smooth");
+  install.$.click(function() { logger.install(); console.log("Welcome!"); });
+  return div(
+    install,
+    noh.table1r({style:"border: 6px ridge green"},
+      td(logger)
+    )
+  );
+};
 
