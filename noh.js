@@ -296,6 +296,14 @@ noh.str.limitlen = function(text, maxlen) {
   return text;
 };
 
+
+noh.str.prefix = function(text, prefix, len) {
+  while(text.length < len)
+    text = prefix + text;
+  return text;
+};
+
+
 /**
  * A base constructor for Node objects. This is base "class" for all UI objects created by NOH.
  * @constructor
@@ -361,7 +369,7 @@ noh.Node.prototype.splice = function() { throw new NotSupportedError(); };
 
 /**
  * Attaches a node to given DOM root element
- * @param {!noh.Node} root
+ * @param {!Node} root (It's a DOM Node class (not noh.Node)
  * @return {!noh.Node} this (for chaining)
  */
 noh.Node.prototype.attachToDOM = function(root) {
@@ -1534,7 +1542,14 @@ noh.log.filter = function(logger, filter) {
 noh.log.addtime = function(logger) {
   var filter = function(data) {
     var now = new Date();
-    var time = "[" + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + "]";
+    var time =
+      "[" +
+      noh.str.prefix("" + now.getHours(), "0", 2) +
+      ":" +
+      noh.str.prefix("" + now.getMinutes(), "0", 2) +
+      ":" +
+      noh.str.prefix("" + now.getSeconds(), "0", 2) +
+      "]";
     return [time].concat(Array.prototype.slice.call(data, 0));
   };
   return noh.log.filter(logger, filter);
@@ -1622,6 +1637,16 @@ noh.cmdline = function(len) {
 
   return cmdline;
 };
+
+
+
+
+
+
+
+
+
+
 
 
 
