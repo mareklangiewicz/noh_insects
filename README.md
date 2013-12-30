@@ -11,8 +11,8 @@ but also we have functions that constructs many specialized and more complex ele
 implemented (like `menu`, `blind`, `oneof`, `bar`, `logger`, and more).
 User can easely use those basic and more advanced elements as a blocks to construct more complex elements.
 
-Please check the files: `noh_example.js` (and `example.html`) for full (but simple) working example.
-Main documentation with introduction and examples is available here: [NOH library documentation](index.html)
+Please check the files: `noh_example.js` (and `noh_example.html`) for full (but simple) working example.
+Main documentation with introduction and examples is available here: [NOH library documentation](noh_doc.html)
 Additional API documentation generated with [JSDoc3](http://usejsdoc.org/) will be available here: [NOH API documentation](apidoc/index.html)
 
 NOH library depends on jQuery. TODO: Limit jQuery usage for NOH to be able to work with SVG or other elements (not only html)
@@ -36,9 +36,9 @@ Instead of HTML code like:
 
 We write JS code like:
 
-    div({id:"someid"},
-        h2("EXAMPLE"),
-        p(h4("Some header"),"Some content"),
-        p(h4("Other header"),"Other content")
+    noh.div({id:"someid"},
+        noh.h2("EXAMPLE"),
+        noh.p(noh.h4("Some header"),"Some content"),
+        noh.p(noh.h4("Other header"),"Other content")
     );
 
