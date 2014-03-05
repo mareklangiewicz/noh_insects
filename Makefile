@@ -5,6 +5,7 @@ OUT = \
 	noh_tests_min2.js \
 	noh_example_min1.js \
 	noh_example_min2.js \
+	noh_insects_min1.js \
 
 
    
@@ -36,6 +37,9 @@ noh_example_min1.js:
 
 noh_example_min2.js:
 	java -jar compiler/compiler.jar --js noh.js noh_example.js --js_output_file noh_example_min2.js --externs jquery-1.9.externs.js --compilation_level ADVANCED_OPTIMIZATIONS --warning_level VERBOSE
+
+noh_insects_min1.js:
+	java -jar compiler/compiler.jar --js noh.js noh_insects.js --js_output_file noh_insects_min1.js --warning_level VERBOSE --externs jquery-1.9.externs.js
 
 jsdoc:
 	jsdoc -d apidoc *.js
