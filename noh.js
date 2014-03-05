@@ -23,7 +23,8 @@
  * NOH library depends on jQuery. TODO: Limit jQuery usage for NOH to be able to work with SVG or other elements (not only html)
  * {@linkcode http://stackoverflow.com/questions/3642035/jquerys-append-not-working-with-svg-element|stackoverflow}
  * </p>
- * @licence Released under the MIT license.
+ *
+ * Released under the MIT license.
  */
 
 /*
@@ -54,7 +55,7 @@
 /**
  * @namespace Main NOH library namespace.
  */
-noh = {};
+var noh = {};
 
 
 
@@ -65,7 +66,7 @@ noh.Attrs;
 /** @typedef {Array.<noh.Node>} */
 noh.Nodes;
 
-/** @typedef {(noh.Attrs|noh.Node|string|Array.<noh.AttrsAndNodes>|Arguments.<AttrsAndNodes>|undefined)} */
+/** @typedef {(noh.Attrs|noh.Node|string|Array.<noh.AttrsAndNodes>|Arguments|undefined)} */
 noh.AttrsAndNodes; 
 
 /** @typedef {{attrs: noh.Attrs, nodes:noh.Nodes}} */
@@ -84,7 +85,7 @@ noh.NotImplementedError.prototype = new Error("Not implemented");
 /**
  * @param {string=} opt_msg
  * @constructor
- * @extends {NotImplementedError}
+ * @extends {noh.NotImplementedError}
  */
 noh.NotSupportedError = function(opt_msg) { if(opt_msg) this.message = opt_msg; };
 noh.NotSupportedError.prototype = new noh.NotImplementedError("Operation not supported");
@@ -178,13 +179,14 @@ noh.TAGS = [
  * <li> which we have to ignore (user can pass some undefined arguments and we will ignore them) </li>
  * </ul>
  * Pretty examples of using this flexibility should be presented in the main documentation: {@link index.html|NOH Library documentation}
- * @param {noh.AttrsAndNodes} args Arguments parsed as attributes and nodes.
+ * @param {noh.AttrsAndNodes} args Arguments to be parsed as attributes and nodes.
  * @param {number=} opt_ignore Number of elements to ignore at the beginning of args list. It is important only if args is an array-like object (default is 0)
  * @param {noh.RecAttrsAndNodes=} opt_result A result object to be extended.
  * @return {noh.RecAttrsAndNodes} Attributes and children extracted from args.
  */
 noh.organize = function(args, opt_ignore, opt_result) {
 
+  var ignore = opt_ignore === undefined ? 0 : opt_ignore;
   var result = opt_result ? opt_result : {
     attrs: {},
     nodes: []
@@ -195,7 +197,7 @@ noh.organize = function(args, opt_ignore, opt_result) {
   else if(typeof args === "string")
     result.nodes.push(noh.text(args));
   else if(noh.arr.isArrayLike(args))
-    for(var i = opt_ignore === undefined ? 0 : opt_ignore; i < args.length; ++i)
+    for(var i = ignore; i < args.length; ++i)
       noh.organize(args[i], 0, result);
   else if(args instanceof Object)
     $.extend(result.attrs, args);
@@ -272,21 +274,22 @@ noh.arr.obj2arr = function(records, obj) {
 
 /**
  * Checks if the provided object is an array or can be used as an array.
- * @param {Object} arr An object to test.
+ * @param {Object=} arr An object to test.
  * @return {boolean} True if arr is an array like object
  */
 noh.arr.isArrayLike = function(arr) {
+  if(arr == undefined) return false;
+  if(arr == null) return false;
+  if(arr instanceof jQuery) return true;
+  if(jQuery.isArray(arr)) return true;
+  var len = arr.length;
+  if(typeof(len) !== "number") return false;
+  if(len == 0) return true;
+  if(len < 0) return false;
   var hasOwn = Object.prototype.hasOwnProperty;
-  var len;
-  return arr != null && ( //Here the != is intentional (we don't want to use !==)
-    arr instanceof jQuery ||
-    typeof(len = arr.length) === "number" && (
-      (
-        len >= 0 && hasOwn.call(arr, 0) &&
-        hasOwn.call(arr, len - 1)
-      ) || jQuery.isArray(arr)
-    )
-  );
+  if(!hasOwn.call(arr, 0)) return false;
+  if(!hasOwn.call(arr, len - 1)) return false;
+  return true;
 };
 
 
@@ -374,7 +377,7 @@ noh.Node.prototype.rem = function() {
  * then implement other array-like methods using splice. (like: pop, push, shift, unshift) 
  * @see http://stackoverflow.com/questions/6599071/array-like-objects-in-javascript
  */
-noh.Node.prototype.splice = function() { throw new NotSupportedError(); };
+noh.Node.prototype.splice = function() { throw new noh.NotSupportedError(); };
 
 
 /**
@@ -570,10 +573,14 @@ noh.tablebar = function(var_args) {
     var an = noh.organize(arguments);
     var cells = [];
     for(var x = 0; x < an.children.length; ++x)
-        cells.push(j.td(an.nodes[x]));
+        cells.push(noh.td(an.nodes[x]));
     return noh.table1r({"class":"noh bar"}, an.attrs, cells);
 };
 // TODO: better bars: bar(horizontal/vertical, ...); hbar = bar(horizontal, ...); vbar = ... And no tables! (but css)
+// FIXME: UPDATE: tablebar is not tested and not sure if needed at all.
+
+
+
 
 
 
@@ -981,7 +988,10 @@ noh.details = function(var_args) {
   var blind = noh.blind(content);
   var button = noh.button("details...").addclass('noh details button').attr('title', 'show/hide details');
   button.on("click", function() {blind.roll(!blind.down());});
-  return noh.div(noh.div(button), noh.div(blind)).addclass('noh details');
+  var details = noh.div(noh.div(button), noh.div(blind)).addclass('noh details');
+  details.down = function() { return blind.down(); };
+  details.roll = function(down) { return blind.roll(down); };
+  return details;
 };
 
 
@@ -1070,6 +1080,7 @@ noh.Reel.prototype.select = function(nr) {
 noh.Reel.prototype.chksize = function() {
   var size = 0;
   var maxsize = 0;
+  var esize = 0;
   if(this.width == "automatic") {
     for(var i = 0; i < this.length; ++i) {
       esize = this[i].$.width();
@@ -1241,10 +1252,14 @@ noh.fancy = function(element, opt_options) {
   if(noh.arr.indexOf(element.tag, ["h1", "h2", "h3", "h4"]) != -1) {
     element.on("click", function() { this.noh.scroll(); });
   }
+  else if(element.tag == "a") {
+    var href = element.$.attr("href");
+    if(href && href.length > 0 && href[0] == "#") {
+      element.on("click", function() { noh.scroll($($(this).attr("href")).offset().top) });
+    }
+  }
   return element;
 }
-
-
 
 
 /**
@@ -1383,19 +1398,19 @@ noh.log.IConsole.prototype.log = function(var_args) {};
 
 /**
  * Logs given data with "info" (normal) severity. Usually this is the same as "log"
- * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
  */
 noh.log.IConsole.prototype.info = function(var_args) {};
 
 /**
  * Logs given data with "warn" (warning) severity. Usually this severity is marked somehow (like bold font), but not with red color.
- * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
  */
 noh.log.IConsole.prototype.warn = function(var_args) {};
 
 /**
  * Logs given data with "error" severity. Usually this severity is highlighted (f.e. with red bold font).
- * @param {...*} var_args Data to log. {@linkcode noh.IConsole.prototype.log}
+ * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
  */
 noh.log.IConsole.prototype.error = function(var_args) {};
 
@@ -1405,7 +1420,7 @@ noh.log.IConsole.prototype.error = function(var_args) {};
 /**
  * Wraps an ILogger object into IConsole.
  * This console can be then installed as global console object (window.console), so all system logs will be logged using given logger.
- * @implements {noh.IConsole}
+ * @implements {noh.log.IConsole}
  * @constructor
  * @param {!noh.log.ILogger} logger A logger to wrap.
  */
@@ -1609,7 +1624,7 @@ noh.log.reel = function(lines, opt_duration) {
     loggers.push(noh.log.slittle(duration));
   var reel = noh.reel(lines, "automatic", "automatic", loggers);
   reel.select(lines-1);
-  logger = noh.div(reel).addclass('noh log reel');
+  var logger = noh.div(reel).addclass('noh log reel');
   logger.reel = reel;
   /** @this {noh.Element} */
   logger.log = function(classes, data) {
@@ -1629,8 +1644,9 @@ noh.log.reel = function(lines, opt_duration) {
 
 
 
-noh.cmdline = function(len) {
-  var input = noh.input().attr('type', 'text').attr('size', len).attr('placeholder', 'alert("hello world")').addclass('noh cmdline');
+noh.cmdline = function(len, opt_placeholder) {
+  var placeholder = opt_placeholder || 'alert("hello world")';
+  var input = noh.input().attr('type', 'text').attr('size', len).attr('placeholder', placeholder).addclass('noh cmdline');
   var enter = noh.button(String.fromCharCode(8629)).attr('title', 'Press enter to run the command.').addclass('noh cmdline');
   var cmdline = noh.div(input, enter).css("display", "inline-block").addclass('noh cmdline');
   cmdline.run = function() {
@@ -1648,6 +1664,15 @@ noh.cmdline = function(len) {
 
     input.$.val("");
   };
+
+  cmdline.type = function(text) {
+    input.$.val(text);
+  };
+
+  cmdline.focus = function() {
+    input.$.focus();
+  };
+
   input.on("keypress", function(e) {
     if(e.which == 13)
       cmdline.run();
@@ -1661,6 +1686,36 @@ noh.cmdline = function(len) {
 
 
 
+
+noh.objtest = function(obj, commands) {
+
+  var objwrap = noh.table1r({style:"border: 6px ridge green"},
+    noh.td(obj)
+  );
+
+  var buttons = [];
+  for(var i = 0; i < commands.length; ++i) {
+    var button = noh.button(commands[i]).addclass('noh button')
+      .attr('title', 'Prepare the "' + commands[i] + '" command to run.');
+
+    button.on("click", function() {
+      window["obj"] = obj;
+      cmdline.type(this.textContent);
+      cmdline.focus();
+    });
+
+    buttons.push(button);
+    buttons.push(noh.br());
+  }
+
+  var cmdline = noh.cmdline(60, 'obj.some_method()');
+
+  return noh.div(
+    noh.p(objwrap),
+    noh.p(cmdline),
+    noh.p(buttons)
+  );
+}
 
 
 
@@ -1805,7 +1860,7 @@ noh.Menu.prototype.selected = function() { return this.selected_; };
 noh.Menu.prototype.select = function(idx) {
 
   if(this.selected_ != -1)
-    this.items_[selected_].toggle_orig_(); // deselects old item
+    this.items_[this.selected_].toggle_orig_(); // deselects old item
 
   //TODO: check the idx value in DEBUG mode (check the @define in closure compiler) (make sure it is removed completely in release mode)
 
@@ -1836,7 +1891,7 @@ noh.menu = function(var_args) {
  * @return {noh.ISelectable} A menuitem with menu attached.
  */
 noh.submenu = function(item, menu) {
-  var submenu = bigmenuitem(item, menu);
+  var submenu = noh.bigmenuitem(item, menu);
   submenu.menu = menu;
   return submenu;
 };

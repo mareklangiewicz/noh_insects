@@ -16,7 +16,8 @@ function noh_doc_init() {
     return;
   var doc = noh_doc();
   doc.attachToDOM(container[0]);
-  SyntaxHighlighter.all();
+  if(window['SyntaxHighlighter'])
+    window['SyntaxHighlighter'].all(); // strange syntax to avoid closure compiler complainings (variable SyntaxHighlighter is undeclared)
 }
 
 $(document).ready(noh_doc_init);

@@ -5,7 +5,8 @@
  * @fileoverview
  * This file contains NOH library tests (written using NOH library itself)
  * You have to init NOH library with option: pollute:true, to use code from this file.
- * We use the {@link http://alexgorbatchev.com/SyntaxHighlighter/|SyntaxHighlighter} to show some source code on the page.
+ * We use the {@link http://alexgorbatchev.com/SyntaxHighlighter/|SyntaxHighlighter}
+ * to show some source code on the page.
  */                                        
 
 
@@ -14,8 +15,9 @@
 
 
 /**
- * This function will insert tree with all tests to DOM element with id="noh_tests" (it it finds one).
- * If there is no such element, user can still insert it wherever he wants by hand.
+ * This function will insert tree with all tests to DOM element with id="noh_tests"
+ * (if it finds one).If there is no such element, user can still insert it
+ * wherever he wants, using noh_tests() function by hand.
  */
 function noh_tests_init() {
   var container = $('#noh_tests');
@@ -23,7 +25,9 @@ function noh_tests_init() {
     return;
   var tests = noh_tests();
   tests.attachToDOM(container[0]);
-  SyntaxHighlighter.all();
+  if(window['SyntaxHighlighter'])
+    window['SyntaxHighlighter'].all(); // strange syntax to avoid closure compiler complainings
+      // (like: variable SyntaxHighlighter is undeclared)
 }
 
 $(document).ready(noh_tests_init);
@@ -63,9 +67,15 @@ function runstest(f) {
   var node = f();
   return tdiv(
     noh.ul(
-      noh.li(noh.h4("Source code:"), tdiv(noh.srccode(f))),
+      noh.li(noh.h4("Source code:"), noh.srccode(f)),
       noh.li(noh.h4("Result:"), tdiv(node)),
-      noh.li(noh.h4("Result source code (html):"), tdiv(noh.syntaxhl("html", node.dom.outerHTML || new XMLSerializer().serializeToString(node.dom))))
+      noh.li(
+        noh.h4("Result source code (html):"),
+        noh.syntaxhl(
+          "html",
+          node.dom.outerHTML || new XMLSerializer().serializeToString(node.dom)
+        )
+      )
     )
   );
 }
@@ -79,15 +89,32 @@ function runstest(f) {
 function runstests(stests) {
   var testsres = [];
   for(var t in stests)
-    testsres.push(noh.dt(noh.fancy(noh.h3("stest: ", t))).css("padding", "20px"), noh.dd(runstest(stests[t])));
+    testsres.push(
+      noh.dt(noh.fancy(noh.h3({id:"stest_" + t}, "stest: ", t))).css("padding", "20px"),
+      noh.dd(runstest(stests[t]))
+    );
   var runtests = noh.dl(testsres);
   return runtests;
 }
 
+function stests_toc(stests) {
+  var astyle = {"class":"noh link", style:"padding: 5px"};
+  var toc = [];
+  for(var t in stests) {
+    var a = noh.a(astyle, t);
+    a.scroll_target = "#stest_" + t;
+    a.on("click", function() { $(this.noh.scroll_target)[0].noh.scroll(); });
+    toc.push(noh.li(a));
+  }
+  return noh.ul(toc);
+}
 
 function noh_tests() {
   return noh.div(
-    noh.fancy(noh.h2("Simple tests")),
+    noh.fancy(noh.h1("NOH Simple tests")),
+    noh.p("Please check the ", noh.a({href: "noh_doc.html"}, "documentation"), " first."),
+    noh.fancy(noh.h3("TOC")),
+    stests_toc(tests),
     runstests(tests)
   );
 };
@@ -151,326 +178,193 @@ tests.srccode = function() {
 };
 
 
-tests.overlay = function() {
-  var content1 = noh.div({style:"margin: 10px; color: green; font-size: xx-large"}, " overlay BLEBLE", noh.br(), "BLUBLU").addclass("pretty");
-  var content2 = noh.div({style:"margin: 10px; color: blue; font-size: x-large"}, " overlay BLEBLE", noh.br(), "BLUBLU").addclass("pretty");
-  var content3 = noh.div({style:"margin: 30px; color: red; font-size: large"}, " overlay", noh.br(), "BLU").addclass("pretty");
-  var overlay = noh.overlay(content1, content2, content3).addclass("left top");
-  overlay.$.click(function() {overlay.hide()});
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var show = noh.a(style, 'overlay.show()');
-  var hide = noh.a(style, 'overlay.hide()');
-  var show1 = noh.a(style, 'overlay.show(1)');
-  var hide1 = noh.a(style, 'overlay.hide(1)');
-  var show2 = noh.a(style, 'overlay.show(2)');
-  var hide2 = noh.a(style, 'overlay.hide(2)');
-  var addsmooth = noh.a(style, 'overlay.parent.addclass("smooth")');
-  var remsmooth = noh.a(style, 'overlay.parent.remclass("smooth")');
-  var addpretty = noh.a(style, 'overlay[1].addclass("pretty")');
-  var rempretty = noh.a(style, 'overlay[1].remclass("pretty")');
-  var tobottom = noh.a(style, 'overlay.remclass("top").addclass("bottom")');
-  var totop = noh.a(style, 'overlay.remclass("bottom").addclass("top")');
-  show.$.click(function() {overlay.show()});
-  hide.$.click(function() {overlay.hide()});
-  show1.$.click(function() {overlay.show(1)});
-  hide1.$.click(function() {overlay.hide(1)});
-  show2.$.click(function() {overlay.show(2)});
-  hide2.$.click(function() {overlay.hide(2)});
-  addsmooth.$.click(function() {overlay.parent.addclass("smooth")});
-  remsmooth.$.click(function() {overlay.parent.remclass("smooth")});
-  addpretty.$.click(function() {overlay[1].addclass("pretty")});
-  rempretty.$.click(function() {overlay[1].remclass("pretty")});
-  tobottom.$.click(function() {overlay.remclass("top").addclass("bottom")});
-  totop.$.click(function() {overlay.remclass("bottom").addclass("top")});
-  return noh.div(
-    show, hide, noh.br(),
-    show1, hide1, noh.br(),
-    show2, hide2, noh.br(),
-    addsmooth,
-    remsmooth, noh.br(),
-    addpretty,
-    rempretty, noh.br(),
-    tobottom,
-    totop,
-    noh.table1r({style:"border: 6px ridge green"},
-      noh.td(overlay)
-    )
-  );
-};
-
-
-tests.overlay2 = function() {
-  var content1 = noh.div({style:"margin: 10px; color: green; font-size: xx-large"}, " overlay BLEBLE", noh.br(), "BLUBLU").addclass("pretty");
-  var content2 = noh.div({style:"margin: 10px; color: blue; font-size: x-large"}, " overlay BLEBLE", noh.br(), "BLUBLU").addclass("pretty");
-  var content3 = noh.div({style:"margin: 30px; color: red; font-size: large"}, " overlay", noh.br(), "BLU").addclass("pretty");
-  var overlay = noh.overlay(
-    content1,
-    content2,
-    noh.ex.silly().addclass("pretty"),
-    content3
-  ).addclass("top"); //We will control left/right position by hand
-  overlay.css("right", "10px");
-  overlay.$.click(function() {overlay.hide()});
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var show = noh.a(style, 'overlay.show()');
-  var hide = noh.a(style, 'overlay.hide()');
-  var show1 = noh.a(style, 'overlay.show(1)');
-  var hide1 = noh.a(style, 'overlay.hide(1)');
-  var show2 = noh.a(style, 'overlay.show(2)');
-  var hide2 = noh.a(style, 'overlay.hide(2)');
-  var addsmooth = noh.a(style, 'overlay.parent.addclass("smooth")');
-  var remsmooth = noh.a(style, 'overlay.parent.remclass("smooth")');
-  var tobottom = noh.a(style, 'overlay.remclass("top").addclass("bottom")');
-  var totop = noh.a(style, 'overlay.remclass("bottom").addclass("top")');
-  var right1 = noh.a(style, 'overlay.css("right", "30px")');
-  var right2 = noh.a(style, 'overlay.css("right", "130px")');
-  var right3 = noh.a(style, 'overlay.css("right", "230px")');
-  show.$.click(function() {overlay.show()});
-  hide.$.click(function() {overlay.hide()});
-  show1.$.click(function() {overlay.show(1)});
-  hide1.$.click(function() {overlay.hide(1)});
-  show2.$.click(function() {overlay.show(2)});
-  hide2.$.click(function() {overlay.hide(2)});
-  addsmooth.$.click(function() {overlay.parent.addclass("smooth")});
-  remsmooth.$.click(function() {overlay.parent.remclass("smooth")});
-  tobottom.$.click(function() {overlay.remclass("top").addclass("bottom")});
-  totop.$.click(function() {overlay.remclass("bottom").addclass("top")});
-  right1.$.click(function() {overlay.css("right", "30px")});
-  right2.$.click(function() {overlay.css("right", "130px")});
-  right3.$.click(function() {overlay.css("right", "230px")});
-  return noh.div(
-    show, hide, noh.br(),
-    show1, hide1, noh.br(),
-    show2, hide2, noh.br(),
-    addsmooth,
-    remsmooth, noh.br(),
-    tobottom,
-    totop, noh.br(),
-    right1, right2, right3,
-    noh.table1r({style:"border: 6px ridge green"},
-      noh.td(overlay)
-    )
-  );
-};
-
-tests.overlay3 = function() {
-  var logger = noh.log.reel(15).addclass("pretty");
-  install_logger(logger);
-  var cmdline = noh.cmdline(40).addclass("pretty");
-  var overlay = noh.overlay(logger, cmdline);
-  overlay.addclass("bottom"); //We will control left/right position by hand
-  overlay.addclass("smooth");
-  overlay.css("right", "10px");
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var show = noh.a(style, 'overlay.show()');
-  var hide = noh.a(style, 'overlay.hide()');
-  var show1 = noh.a(style, 'overlay.show(1)');
-  var hide1 = noh.a(style, 'overlay.hide(1)');
-  var show2 = noh.a(style, 'overlay.show(2)');
-  var hide2 = noh.a(style, 'overlay.hide(2)');
-  var addsmooth = noh.a(style, 'overlay.parent.addclass("smooth")');
-  var remsmooth = noh.a(style, 'overlay.parent.remclass("smooth")');
-  var tobottom = noh.a(style, 'overlay.remclass("top").addclass("bottom")');
-  var totop = noh.a(style, 'overlay.remclass("bottom").addclass("top")');
-  var right1 = noh.a(style, 'overlay.css("right", "30px")');
-  var right2 = noh.a(style, 'overlay.css("right", "130px")');
-  var right3 = noh.a(style, 'overlay.css("right", "230px")');
-  show.$.click(function() {overlay.show()});
-  hide.$.click(function() {overlay.hide()});
-  show1.$.click(function() {overlay.show(1)});
-  hide1.$.click(function() {overlay.hide(1)});
-  show2.$.click(function() {overlay.show(2)});
-  hide2.$.click(function() {overlay.hide(2)});
-  addsmooth.$.click(function() {overlay.parent.addclass("smooth")});
-  remsmooth.$.click(function() {overlay.parent.remclass("smooth")});
-  tobottom.$.click(function() {overlay.remclass("top").addclass("bottom")});
-  totop.$.click(function() {overlay.remclass("bottom").addclass("top")});
-  right1.$.click(function() {overlay.css("right", "30px")});
-  right2.$.click(function() {overlay.css("right", "130px")});
-  right3.$.click(function() {overlay.css("right", "230px")});
-  return noh.div(
-    show, hide, noh.br(),
-    show1, hide1, noh.br(),
-    show2, hide2, noh.br(),
-    addsmooth,
-    remsmooth, noh.br(),
-    tobottom,
-    totop, noh.br(),
-    right1, right2, right3,
-    noh.table1r({style:"border: 6px ridge green"},
-      noh.td(overlay)
-    )
-  );
-};
 
 
 tests.sleepy = function() {
-  var content = noh.div({style:"color: green; font-size: xx-large"}, " sleepy BLEBLE", noh.br(), "BLUBLU");
-  var sleepy = noh.sleepy(content, 2000);
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var wake = noh.a(style, "sleepy.wake()");
-  var sleep = noh.a(style, "sleepy.sleep()");
-  var addsmooth = noh.a(style, 'sleepy.parent.addclass("smooth")');
-  var remsmooth = noh.a(style, 'sleepy.parent.remclass("smooth")');
-  wake.$.click(function() {sleepy.wake()});
-  sleep.$.click(function() {sleepy.sleep();});
-  addsmooth.$.click(function() {sleepy.parent.addclass("smooth")});
-  remsmooth.$.click(function() {sleepy.parent.remclass("smooth")});
-  return noh.div(
-    wake,
-    sleep,
-    addsmooth,
-    remsmooth,
-    noh.table1r({style:"border: 6px ridge green"},
-      noh.td(sleepy)
-    )
-  );
+
+  var obj = noh.sleepy(noh.ex.simple(), 2000);
+
+  return noh.objtest(obj, [
+    'obj.wake()',
+    'obj.sleep()',
+    'obj.parent.addclass("smooth")',
+    'obj.parent.remclass("smooth")'
+  ]);
 };
 
 
 
 tests.blind = function() {
-  var blind = noh.blind(
-    noh.div({style:"color: blue; font-size: xx-large"}, "blind BLEBLE", noh.br(), "BLUBLU")
+
+  var obj = noh.blind(
+    noh.ex.rainbow(4)
   );
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var rolldown = noh.a(style, "blind.roll(true)");
-  var rollup = noh.a(style, "blind.roll(false)");
-  var down = noh.a(style, "alert(blind.down())");
-  rolldown.$.click(function() {blind.roll(true)});
-  rollup.$.click(function() {blind.roll(false)});
-  down.$.click(function() {alert(blind.down())});
-  return noh.div(
-    rolldown,
-    rollup,
-    down,
-    noh.table1r({style:"border: 6px ridge green"},
-      noh.td(blind)
-    )
-  );
+
+  return noh.objtest(obj, [
+    'obj.roll(true)',
+    'obj.roll(false)',
+    'obj.down()'
+  ]).addclass("smooth");
 };
 
 
 tests.oneof = function() {
-  var oneof = noh.oneof(
+  var obj = noh.oneof(
     noh.div({style:"font-style: italic; color: green; font-size: xx-large"}, "BLABLA"),
     noh.div({style:"color: blue; font-size: xx-large"}, "BLEBLE", noh.br(), "BLUBLU"),
     noh.div({style:"color: red; font-size: xx-large"}, "BLIBLI", noh.br(), noh.br(), "BLZBLZ")
   );
-  oneof.select(0);
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var next = noh.a(style, "oneof.next()");
-  var prev = noh.a(style, "oneof.prev()");
-  var select1 = noh.a(style, "oneof.select(1)");
-  var select_1 = noh.a(style, "oneof.select(-1)");
-  next.$.click(function() {oneof.next()});
-  prev.$.click(function() {oneof.prev()});
-  select1.$.click(function() {oneof.select(1)});
-  select_1.$.click(function() {oneof.select(-1)});
-  return noh.div(
-    next,
-    prev,
-    select1,
-    select_1,
-    noh.table1r({style:"border: 6px ridge green"},
-      noh.td(oneof)
-    )
-  );
+  obj.select(0);
+
+  return noh.objtest(obj, [
+    'obj.next()',
+    'obj.prev()',
+    'obj.select(1)',
+    'obj.select(-1)'
+  ]).addclass("smooth");
 };
 
 tests.details = function() {
   var bigstyle = {style:"color: brown; font-size: x-large; width: 400px;"};
-  return noh.div(
-    noh.span(bigstyle, "BASIC INFO"),
-    noh.details(
+  var obj = noh.details(
       noh.div(
         noh.div(bigstyle, "bjkalb DETAILS"),
         noh.div(bigstyle, "fjdsklfsd   DETAILS"),
         noh.div("fjdsklf jksfl dsjlf djksdfl DETAILS")
       )
-    )
   );
+
+  obj.addclass("smooth");
+
+  return noh.objtest(obj, [
+    "obj.down()",
+    "obj.roll(true)",
+    "obj.roll(false)"
+  ]);
 };
 
-function gen_test_reel(reel) {
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var addsmooth = noh.a(style, 'reel.parent.addclass("smooth")');
-  var remsmooth = noh.a(style, 'reel.parent.remclass("smooth")');
-  var addfast = noh.a(style, 'reel.parent.addclass("fast")');
-  var remfast = noh.a(style, 'reel.parent.remclass("fast")');
-  var addslow = noh.a(style, 'reel.parent.addclass("slow")');
-  var remslow = noh.a(style, 'reel.parent.remclass("slow")');
-  var addveryslow = noh.a(style, 'reel.parent.addclass("very_slow")');
-  var remveryslow = noh.a(style, 'reel.parent.remclass("very_slow")');
-  var addfancy = noh.a(style, 'reel.addclass("fancy")');
-  var remfancy = noh.a(style, 'reel.remclass("fancy")');
-  var rotate1 = noh.a(style, "reel.rotate(1)");
-  var rotate2 = noh.a(style, "reel.rotate(2)");
-  var rotate3 = noh.a(style, "reel.rotate(3)");
-  var rotatem1 = noh.a(style, "reel.rotate(-1)");
-  var rotatem2 = noh.a(style, "reel.rotate(-2)");
-  var rotatem3 = noh.a(style, "reel.rotate(-3)");
-  var spin20 = noh.a(style, 'reel.spin(20)');
-  var spinback = noh.a(style, 'reel.spin(-12, -4, 100)');
-  var update1 = noh.a(style, 'reel.update(1)'); 
-  var update2 = noh.a(style, 'reel.update(2)'); 
-  var update3 = noh.a(style, 'reel.update(3)'); 
-  var update5 = noh.a(style, 'reel.update(5)'); 
-  var update7 = noh.a(style, 'reel.update(7)'); 
-  addsmooth.$.click(function() {reel.parent.addclass("smooth")});
-  remsmooth.$.click(function() {reel.parent.remclass("smooth")});
-  addfast.$.click(function() {reel.parent.addclass("fast")});
-  remfast.$.click(function() {reel.parent.remclass("fast")});
-  addslow.$.click(function() {reel.parent.addclass("slow")});
-  remslow.$.click(function() {reel.parent.remclass("slow")});
-  addveryslow.$.click(function() {reel.parent.addclass("very_slow")});
-  remveryslow.$.click(function() {reel.parent.remclass("very_slow")});
-  addfancy.$.click(function() {reel.addclass("fancy")});
-  remfancy.$.click(function() {reel.remclass("fancy")});
-  rotate1.$.click(function() {reel.rotate(1)});
-  rotate2.$.click(function() {reel.rotate(2)});
-  rotate3.$.click(function() {reel.rotate(3)});
-  rotatem1.$.click(function() {reel.rotate(-1)});
-  rotatem2.$.click(function() {reel.rotate(-2)});
-  rotatem3.$.click(function() {reel.rotate(-3)});
-  spin20.$.click(function() {reel.spin(20)});
-  spinback.$.click(function() {reel.spin(-12, -4, 100)});
-  update1.$.click(function() {reel.update(1);});
-  update2.$.click(function() {reel.update(2);});
-  update3.$.click(function() {reel.update(3);});
-  update5.$.click(function() {reel.update(5);});
-  update7.$.click(function() {reel.update(7);});
-  return noh.div(
-    addsmooth,
-    remsmooth, noh.br(),
-    addfast,
-    remfast, noh.br(),
-    addslow, 
-    remslow, noh.br(),
-    addveryslow, 
-    remveryslow, noh.br(),
-    addfancy, 
-    remfancy, noh.br(),
-    rotate1,
-    rotate2,
-    rotate3,
-    rotatem1,
-    rotatem2,
-    rotatem3, noh.br(),
-    spin20,
-    spinback, noh.br(),
-    update1,
-    update2,
-    update3,
-    update5,
-    update7,
-    noh.div(noh.table1r(noh.td({style:"border: 6px ridge green"}, reel)))
-  );
-}
+
+
+tests.overlay = function() {
+
+  var content1 = noh.div({style:"margin: 10px; color: green; font-size: xx-large"},
+    " overlay BLEBLE", noh.br(), "BLUBLU").addclass("pretty");
+  var content2 = noh.div({style:"margin: 10px; color: blue; font-size: x-large"},
+    " overlay BLEBLE", noh.br(), "BLUBLU").addclass("pretty");
+  var content3 = noh.div({style:"margin: 30px; color: red; font-size: large"},
+    " overlay", noh.br(), "BLU").addclass("pretty");
+
+  var obj = noh.overlay(content1, content2, content3).addclass("right top");
+
+  obj.$.click(function() {obj.hide()});
+
+  var objtest = noh.objtest(obj, [
+    "obj.show()",
+    "obj.hide()",
+    "obj.show(1)",
+    "obj.hide(1)",
+    "obj.show(2)",
+    "obj.hide(2)",
+    'obj.parent.addclass("smooth")',
+    'obj.parent.remclass("smooth")',
+    'obj[1].addclass("pretty")',
+    'obj[1].remclass("pretty")',
+    'obj.remclass("top").addclass("bottom")',
+    'obj.remclass("bottom").addclass("top")'
+  ]);
+
+  obj.parent.addclass("smooth");
+  
+  return objtest;
+};
+
+
+
+tests.overlay2 = function() {
+
+  var obj = noh.overlay(
+    noh.ex.silly().addclass("pretty"),
+    noh.ex.goofy().addclass("pretty"),
+    noh.ex.simple().addclass("pretty"),
+    noh.ex.shiny().addclass("pretty")
+  ).addclass("top"); //We will control left/right position by hand
+
+  obj.css("left", "330px");
+
+  obj.$.click(function() {obj.hide()});
+
+  var objtest = noh.objtest(obj, [
+    "obj.show()",
+    "obj.hide()",
+    "obj.show(2)",
+    "obj.hide(2)",
+    'obj.parent.addclass("smooth")',
+    'obj.parent.remclass("smooth")',
+    'obj[1].addclass("pretty")',
+    'obj[1].remclass("pretty")',
+    'obj.remclass("top").addclass("bottom")',
+    'obj.remclass("bottom").addclass("top")',
+    'obj.css("left", "30px")',
+    'obj.css("left", "330px")'
+  ]);
+
+  obj.parent.addclass("smooth");
+  
+  return objtest;
+};
+
+
+tests.overlay_logger_cmd = function() {
+
+  var logger = noh.log.reel(15).addclass("pretty");
+  install_logger(logger);
+  var cmdline = noh.cmdline(40).addclass("pretty");
+  var obj = noh.overlay(logger, cmdline);
+  obj.addclass("bottom"); //We will control left/right position by hand
+  obj.css("right", "10px");
+
+  var objtest = noh.objtest(obj, [
+    "obj.show()",
+    "obj.hide()",
+    "obj.show(1)",
+    "obj.hide(1)",
+    'obj.parent.addclass("smooth")',
+    'obj.parent.remclass("smooth")',
+    'obj.remclass("top").addclass("bottom")',
+    'obj.remclass("bottom").addclass("top")',
+    'obj.css("right", "30px")',
+    'obj.css("right", "230px")'
+  ]);
+
+  obj.parent.addclass("smooth");
+  
+  return objtest;
+};
+
+var reel_commands = [
+  'obj.rotate(2)',
+  'obj.rotate(-3)',
+  'obj.rotation',
+  'obj.spin(20)',
+  'obj.spin(-12, -4, 100)',
+  'obj.update(2)',
+  'obj.update(5)',
+  'obj.parent.addclass("smooth")',
+  'obj.parent.remclass("smooth")',
+  'obj.parent.addclass("fast")',
+  'obj.parent.remclass("fast")',
+  'obj.parent.addclass("slow")',
+  'obj.parent.remclass("slow")',
+  'obj.parent.addclass("very_slow")',
+  'obj.parent.remclass("very_slow")',
+  'obj.addclass("fancy")',
+  'obj.remclass("fancy")'
+];
+
 
 tests.reel1 = function() {
   var bigstyle = {style:"padding: 5px; border: solid blue; color: black; font-size: large; width: 400px; background: wheat"};
-  var reel = noh.reel(5, "dynamic", "dynamic",
+  var obj = noh.reel(5, "dynamic", "dynamic",
     noh.div(bigstyle, "BLABLA").css("background", "green"),
     noh.div(bigstyle, "BLABLA").css("background", "blue"),
     noh.div(bigstyle, "BLEBLE", noh.br(), "BLUBLU").css("width", "500px"),
@@ -480,11 +374,15 @@ tests.reel1 = function() {
     noh.div(bigstyle, "BLIBLI", noh.br(), "margin:20px", noh.br(), "BLZBLZ").css("width", "250px").css("margin", "20px"),
     noh.div(bigstyle, "BLIBLI", noh.br(), noh.br(), "BLZBLZ").css("width", "130px")
   );
-  reel.select(2);
-  return gen_test_reel(reel);
+
+  obj.select(2);
+
+  var objtest = noh.objtest(obj, reel_commands);
+
+  obj.parent.addclass("smooth");
+  
+  return objtest;
 };
-
-
 
 function reelnr(min, max) {
   var str = function(nr, width) {
@@ -497,64 +395,90 @@ function reelnr(min, max) {
   var style = {style:"font-family: monospace; margin: 5px; padding: 15px; border: solid black; color: black; font-size: large; width: 100; background: wheat"};
   for(var i = min; i <=max; ++i)
     elements.push(noh.div(style, "" + str(i, 3)));
-  return noh.reel(3, "automatic", "automatic", elements).select(1).addclass("smooth").addclass("fancy");
+  return noh.reel(3, "automatic", "automatic", elements)
+    .select(1).addclass("smooth").addclass("fancy");
 }
 
 tests.reel2 = function() {
-  var reel = reelnr(1,12);
-  return gen_test_reel(reel);
+  var obj = reelnr(1,12);
+  var objtest = noh.objtest(obj, reel_commands);
+  obj.parent.addclass("smooth");
+  return objtest;
 };
 
-tests.kbd = function() {
+
+tests.reel_crazy = function() {
+  var dummywatch = function(speed) {
+    var number1 = reelnr(0,speed);
+    var number2 = reelnr(0,speed);
+    var number3 = reelnr(0,speed);
+    var watch = noh.table1r(noh.td(number1), noh.td(number2), noh.td(number3));
+    watch.tick = function() {
+      number3.rotate(-1);
+      if(number3.rotation == 0) {
+        number2.rotate(-1);
+        if(number2.rotation == 0)
+          number1.rotate(-1);
+      }
+    };
+    return watch;
+  };
+
+  var dw1 = dummywatch(3);
+  var dw2 = dummywatch(5);
+  var dw3 = dummywatch(9);
+
+  var obj = noh.reel(5, "dynamic", "dynamic", dw1, dw2, dw3);
+
+  obj.tick = function() {
+    dw1.tick();
+    dw2.tick();
+    dw3.tick();
+  };
+
+  obj.stop = function() {
+    if(this.intervalId)
+      window.clearInterval(this.intervalId);
+    this.intervalId = undefined;
+  };
+
+  obj.start = function(speed) {
+    obj.stop();
+    obj.intervalId = window.setInterval(function() { obj.tick(); }, speed);
+  }
+
+  var objtest = noh.objtest(obj, reel_commands.concat('obj.start(200)', 'obj.stop()'));
+  obj.parent.addclass("smooth");
+  window.setTimeout(function() { obj.update(3); }, 3000);
+  return objtest;
+};
+
+
+tests.ukbd = function() {
   return noh.div(noh.ukbd("fjdkl http://www.google.pl google fjsdk ftp://blabal fjdsl http://mareklangiewicz.pl fds fjdsklfds"));
 };
 
-function get_test_logger(logger) {
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var log1 = noh.a(style, 'logger.log("info", ["dupa info"])');
-  var log2 = noh.a(style, 'logger.log("warning", ["dupa warning"])');
-  var log3 = noh.a(style, 'logger.log("error", ["dupa error", "dupa error2", 3, 4, window])');
-  var log4 = noh.a(style, 'logger.log("info warning", ["dupa info warning"])');
-  var install = noh.a(style, 'noh.log.l2c(logger).install()');
-  var install2 = noh.a(style, 'noh.log.l2c(noh.log.addtime(logger)).install()');
-  var addsmooth = noh.a(style, 'logger.parent.addclass("smooth")');
-  var remsmooth = noh.a(style, 'logger.parent.remclass("smooth")');
-  var addpretty = noh.a(style, 'logger.addclass("pretty")');
-  var rempretty = noh.a(style, 'logger.remclass("pretty")');
-  var setlines5 = noh.a(style, 'logger.setlines(5)');
-  var setlines9 = noh.a(style, 'logger.setlines(9)');
-  log1.$.click(function() { logger.log("info", ["dupa info"]); });
-  log2.$.click(function() { logger.log("warning", ["dupa warning"]); });
-  log3.$.click(function() { logger.log("error", ["dupa error", "dupa error2", 3, 4, window]); });
-  log4.$.click(function() { logger.log("info warning", ["dupa info warning"]); });
-  install.$.click(function() { noh.log.l2c(logger).install(); });
-  install2.$.click(function() { noh.log.l2c(noh.log.limitlen(noh.log.addtime(logger), 20)).install(); });
-  addsmooth.$.click(function() {logger.parent.addclass("smooth")});
-  remsmooth.$.click(function() {logger.parent.remclass("smooth")});
-  addpretty.$.click(function() {logger.addclass("pretty")});
-  rempretty.$.click(function() {logger.remclass("pretty")});
-  setlines5.$.click(function() {logger.setlines(5)});
-  setlines9.$.click(function() {logger.setlines(9)});
-  return noh.div(
-    log1, noh.br(),
-    log2, noh.br(),
-    log3, noh.br(),
-    log4, noh.br(),
-    addsmooth, remsmooth, noh.br(),
-    addpretty, rempretty, noh.br(),
-    install, noh.br(),
-    install2, noh.br(),
-    setlines5, setlines9, noh.br(),
-    noh.table1r({style:"border: 6px ridge green"},
-      noh.td(logger)
-    )
-  );
-}
+
 
 tests.log_slittle = function() {
-  var slittle = noh.log.slittle(3000);
-  return get_test_logger(slittle);
+  var obj = noh.log.slittle(3000);
+  var objtest = noh.objtest(obj, [
+    'obj.log("info", ["dupa info"])',
+    'obj.log("warning", ["dupa warning"])',
+    'obj.log("error", ["dupa error", "dupa error2", 3, 4, window])',
+    'obj.log("info warning", ["dupa info warning"])',
+    'noh.log.l2c(obj).install()',
+    'noh.log.l2c(noh.log.addtime(obj)).install()',
+    'obj.addclass("pretty")',
+    'obj.remclass("pretty")'
+  ]);
+  obj.parent.addclass("smooth");
+  return objtest;
 };
+
+
+
+
 
 tests.log_multi = function() {
   var slittle1 = noh.log.slittle(1000);
@@ -562,14 +486,36 @@ tests.log_multi = function() {
   var slittle3 = noh.log.slittle(3000);
   var c2l = noh.log.c2l(window.console);
   var multi = noh.log.multi([slittle1, slittle2, slittle3, c2l]);
-  var all = noh.div(slittle1, slittle2, slittle3);
-  all.log = function(classes, data) { multi.log(classes, data); };
-  return get_test_logger(all);
+  var obj = noh.div(slittle1, slittle2, slittle3);
+  obj.log = function(classes, data) { multi.log(classes, data); };
+  var objtest = noh.objtest(obj, [
+    'obj.log("info", ["dupa info"])',
+    'obj.log("warning", ["dupa warning"])',
+    'obj.log("error", ["dupa error", "dupa error2", 3, 4, window])',
+    'obj.log("info warning", ["dupa info warning"])',
+    'noh.log.l2c(obj).install()',
+    'noh.log.l2c(noh.log.addtime(obj)).install()'
+  ]);
+  obj.parent.addclass("smooth");
+  return objtest;
 };
 
 tests.log_reel = function() {
-  var rlogger = noh.log.reel(15);
-  return get_test_logger(rlogger);
+  var obj = noh.log.reel(15);
+  var objtest = noh.objtest(obj, [
+    'obj.log("info", ["dupa info"])',
+    'obj.log("warning", ["dupa warning"])',
+    'obj.log("error", ["dupa error", "dupa error2", 3, 4, window])',
+    'obj.log("info warning", ["dupa info warning"])',
+    'noh.log.l2c(obj).install()',
+    'noh.log.l2c(noh.log.addtime(obj)).install()',
+    'obj.addclass("pretty")',
+    'obj.remclass("pretty")',
+    'obj.setlines(5)',
+    'obj.setlines(9)'
+  ]);
+  obj.parent.addclass("smooth");
+  return objtest;
 };
 
 function install_logger(logger) {
@@ -592,21 +538,23 @@ function install_logger(logger) {
 
 };
 
-tests.log_install = function() {
 
-  var style = {"class":"noh link", style:"padding: 5px"};
-  var binstall = noh.a(style, 'install_logger(logger)');
-  var logger = noh.log.reel(15, 30000).addclass("pretty smooth");
-  binstall.$.click(function() { install_logger(logger); console.log("Welcome!"); });
-  return noh.div(
-    binstall,
-    noh.table1r({style:"border: 6px ridge green"},
-      noh.td(logger)
-    )
-  );
+tests.log_install = function() {
+  var obj = noh.log.reel(15, 30000).addclass("pretty smooth");
+  return noh.objtest(obj, [
+    'install_logger(obj)'
+  ]);
 };
+
 
 
 tests.cmdline = function() {
-  return noh.cmdline(40);
+  var obj = noh.cmdline(40);
+  return noh.objtest(obj, [
+    'obj.type("2+2")',
+    'obj.type("2+2*2")',
+    'obj.type("window")',
+    'obj.run()'
+  ]);
 };
+
