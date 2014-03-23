@@ -173,22 +173,22 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
 
 
 
-noh.tree = function(opt_level, opt_trunkw, opt_trunkh) {
-  var level = opt_level === undefined || opt_level < 1 ? 4 : opt_level;
+noh.tree_old  = function(opt_level, opt_trunkw, opt_trunkh) {
+  var level = opt_level === undefined ? 5 : opt_level;
   var trunkw = opt_trunkw || 10;
-  var trunkh = opt_trunkh || 200;
-  return noh._tree_rec(level, trunkw, trunkh);
+  var trunkh = opt_trunkh || 100;
+  return noh.tree_old_rec_(level, trunkw, trunkh);
 };
 
-noh._tree_rec = function(level, trunkw, trunkh) {
+noh.tree_old_rec_ = function(level, trunkw, trunkh) {
   var trunk = noh.rect(trunkw, trunkh).pos(-trunkw/2, -trunkh);
   if(level <= 1)
-    return trunk;
-  var t1 = noh.adiv(noh._tree_rec(level-1, max(1, trunkw*3/4), trunkh*(3+Math.random()*3)/5));
-  var t2 = noh.adiv(noh._tree_rec(level-1, max(1, trunkw*3/4), trunkh*(3+Math.random()*2)/5));
+    return noh.adiv(trunk);
+  var t1 = noh.tree_old_rec_(level-1, max(1, trunkw*3/4), trunkh*(3+Math.random()*3)/5);
+  var t2 = noh.tree_old_rec_(level-1, max(1, trunkw*3/4), trunkh*(3+Math.random()*2)/5);
 
-  t1.css('top', -trunkh+trunkw);
-  t2.css('top', -trunkh+trunkw);
+  t1.pos(0, -trunkh+trunkw);
+  t2.pos(0, -trunkh+trunkw);
 
   var r = 8 + Math.random() * 25;
   if(level % 1)
@@ -196,6 +196,41 @@ noh._tree_rec = function(level, trunkw, trunkh) {
   t1.torig('0px 0px').trans('rotate(' + r + 'deg)');
   r = -r;
   t2.torig('0px 0px').trans('rotate(' + r + 'deg)');
-  return noh.div(trunk, t1, t2)
-    .css('position', 'absolute');
+  return noh.adiv(trunk, t1, t2);
 };
+
+noh.tree = function(opt_options) {
+  var opt = $.extend({}, noh.tree.options, opt_options);
+  return noh.tree_rec_(opt.depth, opt.trunkw, opt.trunkh, opt);
+};
+
+noh.tree.options = { // defaults
+  depth: 4, // levels of recursion
+  breadth: 3, //how many subtrees will grow on each side of the tree trunk.
+  spread: 40, // maximum rotation angle of subtree connected to the trunk (in degrees).
+  trunkw: 6, // width of the trunk (in pixels)
+  trunkw_factor: 3/4, // trunk width is multiplied by this factor for next level tree (0..1)
+  trunkh_factor: 3/5, // trunk height is multiplied by this factor for next level tree (0..1)
+  trunkh: 200, // height of the trunk (in pixels)
+  light: 1 // what part of the trunk can have some branches (subtrees) (0..1)
+};
+
+noh.tree_rec_ = function(depth, trunkw, trunkh, opt) {
+  var trunk = noh.rect(trunkw, trunkh).pos(-trunkw/2, -trunkh);
+  if(depth <= 1)
+    return noh.adiv(trunk);
+  var subtrees = [];
+  var b = opt.breadth.valueOf(); // in case the breadth is fuzzy
+  for(var i = 0; i < Math.floor(b); ++i) {
+    var tl = noh.tree_rec_(depth-1, max(1, trunkw*opt.trunkw_factor), trunkh*opt.trunkh_factor, opt);
+    var tr = noh.tree_rec_(depth-1, max(1, trunkw*opt.trunkw_factor), trunkh*opt.trunkh_factor, opt);
+    tl.pos(0, -trunkh+trunkw/2 + opt.light*i*trunkh/b).torig('0px 0px').trans('rotate(' + ( opt.spread*(i+1)/b) + 'deg)');
+    tr.pos(0, -trunkh+trunkw/2 + opt.light*i*trunkh/b).torig('0px 0px').trans('rotate(' + (-opt.spread*(i+1)/b) + 'deg)');
+    subtrees.push(tl);
+    subtrees.push(tr);
+  }
+  return noh.adiv(trunk, subtrees);
+};
+
+
+

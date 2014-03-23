@@ -34,6 +34,8 @@ function noh_insects_demo() {
     noh.fancy(noh.h1("NOH Insects demo")),
     noh.p("Please check the ", noh.a({href: "noh_doc.html"}, "NOH library documentation"), " first."),
     noh.p("Please check ", noh.a({href: "noh_insects_tests.html"}, "NOH insects tests"), " too."),
+    noh.p("Click somewhere to leave a fly on the screen :-)"),
+    noh.p("TODO: implement some big spiders and other insects :-)"),
     noh.p(refresh),
     noh.demo_trees()
   );
@@ -49,13 +51,23 @@ function noh_insects_demo() {
 
 
 noh.demo_trees = function() {
-  var tree1 = noh.tree(5, 9, 60).css('position', 'fixed').pos(200, $(window).height());
-  var tree2 = noh.tree(5, 9, 60).css('position', 'fixed').pos(400, $(window).height());
-  var tree3 = noh.tree(7, 12, 100).css('position', 'fixed').pos(600, $(window).height());
-  var tree4 = noh.tree(7, 12, 100).css('position', 'fixed').pos(800, $(window).height());
-  var tree5a = noh.tree(7, 12, 100).css('position', 'fixed').pos(1000, $(window).height());
-  var tree5b = noh.tree(7, 12, 100).css('position', 'fixed').pos(1000, $(window).height());
-  return noh.div(tree1, tree2, tree3, tree4, tree5a, tree5b);
+  var trees = [];
+  trees.push(noh.tree_old(5, 9, 60).css('position', 'fixed').pos(200, $(window).height()));
+  trees.push(noh.tree_old(5, 9, 60).css('position', 'fixed').pos(400, $(window).height()));
+  trees.push(noh.tree_old(7, 12, 100).css('position', 'fixed').pos(600, $(window).height()));
+  trees.push(noh.tree_old(7, 12, 100).css('position', 'fixed').pos(800, $(window).height()));
+  trees.push(noh.tree_old(7, 12, 100).css('position', 'fixed').pos(1000, $(window).height()));
+  trees.push(noh.tree_old(7, 12, 100).css('position', 'fixed').pos(1000, $(window).height()));
+  if(navigator.userAgent.indexOf("Chrome") != -1)
+    trees.push(noh.tree({
+        depth: 10,
+        breadth: 1,
+        spread: fnum(20, 15),
+        trunkw: 34,
+        trunkh: 140,
+        trunkh_factor: fnum(0.8, 0.2)
+      }).css('position', 'fixed').pos(1300, $(window).height()));
+  return noh.div(trees);
 };
 
 

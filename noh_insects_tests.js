@@ -103,46 +103,6 @@ function noh_insects_tests() {
 var tests = {};
 
 
-tests.simple = function() { return noh.ex.simple(); };
-tests.goofy = function() { return noh.ex.goofy(); };
-tests.silly = function() { return noh.ex.silly(); };
-tests.whitey = function() { return noh.ex.whitey(); };
-tests.shiny = function() { return noh.ex.shiny(); };
-tests.shiny = function() { return noh.ex.shiny(); };            
-tests.idiots = function() { return noh.ex.idiots(); };
-
-tests.colors = function() {
-  return noh.div(
-    noh.sdiv(noh.ex.color("red")),
-    noh.sdiv(noh.ex.color("green")),
-    noh.sdiv(noh.ex.color("blue"))
-  );
-};
-
-tests.rainbows = function() {
-  return noh.div(
-    noh.sdiv(noh.ex.rainbow(5)),
-    noh.sdiv(noh.ex.rainbow(10)),
-    noh.sdiv(noh.ex.rainbow(15))
-  );
-};            
-
-
-
-tests.sleepy = function() {
-
-  var obj = noh.sleepy(noh.ex.simple(), 2000);
-
-  return noh.objtest(obj, [
-    'obj.wake()',
-    'obj.sleep()',
-    'obj.parent.addclass("smooth")',
-    'obj.parent.remclass("smooth")'
-  ]);
-};
-
-
-
 
 
 tests.overlay_logger_cmd = function() {
@@ -358,9 +318,9 @@ tests.fly_click = function() {
 
 
 
-tests.tree1 = function() {
+tests.tree1_old = function() {
 
-  var obj = noh.div(noh.tree(1, 10, 50).pos(200, 300))
+  var obj = noh.div(noh.tree_old(1, 10, 50).pos(200, 300))
     .css('position', 'relative')
     .css('width', '500px')
     .css('height', '400px');
@@ -377,66 +337,184 @@ tests.tree1 = function() {
     'obj.torig("30px 30px")'
   ]).addclass("smooth");
 };
+
+tests.tree2_old = function() {
+
+  var obj = noh.div(noh.tree_old(2, 10, 100).pos(200, 300))
+    .css('position', 'relative')
+    .css('width', '500px')
+    .css('height', '400px');
+
+  return noh.objtest(obj, [
+    'obj.css("width", "100px")',
+    'obj.css("width", "20px")',
+    'obj.trans("rotate(0deg)")',
+    'obj.trans("rotate(40deg)")',
+    'obj.trans("rotate(80deg)")',
+    'obj.trans("rotate(140deg)")',
+    'obj.torig("0px 0px")',
+    'obj.torig("30px 0px")',
+    'obj.torig("30px 30px")'
+  ]).addclass("smooth");
+};
+
+tests.tree3_old = function() {
+
+  var obj = noh.div(noh.tree_old(5, 9, 60).pos(200, 300))
+    .css('position', 'relative')
+    .css('width', '500px')
+    .css('height', '400px');
+
+  return noh.objtest(obj, [
+    'obj.css("width", "100px")',
+    'obj.css("width", "20px")',
+    'obj.trans("rotate(0deg)")',
+    'obj.trans("rotate(40deg)")',
+    'obj.trans("rotate(80deg)")',
+    'obj.trans("rotate(140deg)")',
+    'obj.torig("0px 0px")',
+    'obj.torig("30px 0px")',
+    'obj.torig("30px 30px")'
+  ]).addclass("smooth");
+};
+
+tests.tree4_old = function() {
+
+  var obj = noh.div(noh.tree_old(7, 12, 100).pos(200, 300))
+    .css('position', 'relative')
+    .css('width', '500px')
+    .css('height', '400px');
+
+  return noh.objtest(obj, [
+    'obj.css("width", "100px")',
+    'obj.css("width", "20px")',
+    'obj.trans("rotate(0deg)")',
+    'obj.trans("rotate(40deg)")',
+    'obj.trans("rotate(80deg)")',
+    'obj.trans("rotate(140deg)")',
+    'obj.torig("0px 0px")',
+    'obj.torig("30px 0px")',
+    'obj.torig("30px 30px")'
+  ]).addclass("smooth");
+};
+
+
+tests.tree_def_old = function() {
+
+  var obj = noh.div(noh.tree_old().pos(200, 300))
+    .css('position', 'relative')
+    .css('width', '500px')
+    .css('height', '400px');
+
+  return noh.objtest(obj, [
+    'obj.css("width", "100px")',
+    'obj.css("width", "20px")',
+    'obj.trans("rotate(0deg)")',
+    'obj.trans("rotate(40deg)")',
+    'obj.trans("rotate(80deg)")',
+    'obj.trans("rotate(140deg)")',
+    'obj.torig("0px 0px")',
+    'obj.torig("30px 0px")',
+    'obj.torig("30px 30px")'
+  ]).addclass("smooth");
+};
+
+tests.tree_def = function() {
+
+  var obj = noh.div(noh.tree().pos(200, 300))
+    .css('position', 'relative')
+    .css('width', '500px')
+    .css('height', '400px');
+
+  return noh.objtest(obj, [
+  ]).addclass("smooth");
+};
+
 
 tests.tree2 = function() {
 
-  var obj = noh.div(noh.tree(2, 10, 100).pos(200, 300))
+  var obj = noh.div(noh.tree({depth:2}).pos(200, 300))
     .css('position', 'relative')
     .css('width', '500px')
     .css('height', '400px');
 
   return noh.objtest(obj, [
-    'obj.css("width", "100px")',
-    'obj.css("width", "20px")',
-    'obj.trans("rotate(0deg)")',
-    'obj.trans("rotate(40deg)")',
-    'obj.trans("rotate(80deg)")',
-    'obj.trans("rotate(140deg)")',
-    'obj.torig("0px 0px")',
-    'obj.torig("30px 0px")',
-    'obj.torig("30px 30px")'
   ]).addclass("smooth");
 };
 
+
 tests.tree3 = function() {
 
-  var obj = noh.div(noh.tree(5, 9, 60).pos(200, 300))
+  var obj = noh.div(
+    noh.tree({depth: 2, breadth: 7}).pos(200, 300),
+    noh.tree({depth: 3, breadth: 2}).pos(400, 300),
+    noh.tree({depth: 3, breadth: 5}).pos(600, 300),
+    noh.tree({depth: 3}).pos(800, 300),
+    noh.tree({depth: 4, breadth: 2}).pos(1000, 300)
+  )
     .css('position', 'relative')
-    .css('width', '500px')
-    .css('height', '400px');
+    .size(800, 400);
 
   return noh.objtest(obj, [
-    'obj.css("width", "100px")',
-    'obj.css("width", "20px")',
-    'obj.trans("rotate(0deg)")',
-    'obj.trans("rotate(40deg)")',
-    'obj.trans("rotate(80deg)")',
-    'obj.trans("rotate(140deg)")',
-    'obj.torig("0px 0px")',
-    'obj.torig("30px 0px")',
-    'obj.torig("30px 30px")'
   ]).addclass("smooth");
 };
 
 tests.tree4 = function() {
 
-  var obj = noh.div(noh.tree(7, 12, 100).pos(200, 300))
+  var obj = noh.div(
+    noh.tree_old(6).pos(100, 300),
+    noh.tree({
+      depth: 6,
+      breadth: 1,
+      spread: fnum(20, 15),
+      trunkw: 10,
+      trunkh: 100,
+      trunkh_factor: fnum(0.8, 0.3)
+    }).pos(300, 300),
+    noh.tree({
+      depth: 3,
+      breadth: fnum(3, 1),
+      spread: fnum(50, 10),
+      trunkw: 6,
+      trunkh: 200,
+      light: fnum(1, 0.5)
+    }).pos(500, 300),
+    noh.tree({depth: 4}).pos(800, 300),
+    noh.tree({depth: 4, breadth: 2}).pos(1000, 300)
+  )
     .css('position', 'relative')
-    .css('width', '500px')
-    .css('height', '400px');
+    .size(800, 400);
 
   return noh.objtest(obj, [
-    'obj.css("width", "100px")',
-    'obj.css("width", "20px")',
-    'obj.trans("rotate(0deg)")',
-    'obj.trans("rotate(40deg)")',
-    'obj.trans("rotate(80deg)")',
-    'obj.trans("rotate(140deg)")',
-    'obj.torig("0px 0px")',
-    'obj.torig("30px 0px")',
-    'obj.torig("30px 30px")'
   ]).addclass("smooth");
 };
 
+
+tests.tree5 = function() {
+
+  var obj = noh.div(
+    noh.tree({
+      depth: 7,
+      breadth: 1,
+      spread: fnum(20, 15),
+      trunkw: 14,
+      trunkh: 100,
+      trunkh_factor: fnum(0.8, 0.2)
+    }).pos(200, 300),
+    noh.tree({
+      depth: 10,
+      breadth: 1,
+      spread: fnum(20, 15),
+      trunkw: 34,
+      trunkh: 140,
+      trunkh_factor: fnum(0.8, 0.2)
+    }).pos(900, 300)
+  )
+    .css('position', 'relative')
+    .size(800, 400);
+
+  return noh.objtest(obj, [
+  ]).addclass("smooth");
+};
 
 
