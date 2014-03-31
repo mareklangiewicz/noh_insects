@@ -1,4 +1,5 @@
 
+/** @param {...noh.AttrsAndNodes} var_args as always.. */
 var prettydiv = function(var_args) {
     var an = noh.organize(arguments);
     return noh.div({style:"margin: 25px; padding:15px; border: double"}, an.attrs, an.nodes);
