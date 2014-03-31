@@ -60,10 +60,10 @@ var noh = {};
 
 
 
-/** @typedef {Object.<string, string>} */
+/** @typedef {!Object.<string, string>} */
 noh.Attrs;
 
-/** @typedef {Array.<noh.Node>} */
+/** @typedef {Array.<!noh.Node>} */
 noh.Nodes;
 
 /** @typedef {(noh.Attrs|noh.Node|string|Array.<noh.AttrsAndNodes>|Arguments|undefined)} */
@@ -182,7 +182,8 @@ noh.TAGS = [
  * @param {noh.AttrsAndNodes} args Arguments to be parsed as attributes and nodes.
  * @param {number=} opt_ignore Number of elements to ignore at the beginning of args list. It is important only if args is an array-like object (default is 0)
  * @param {noh.RecAttrsAndNodes=} opt_result A result object to be extended.
- * @return {noh.RecAttrsAndNodes} Attributes and children extracted from args.
+ * @return {!noh.RecAttrsAndNodes} Attributes and children extracted from args.
+ * @suppress {checkTypes} FIXME: how can I tell the closure compiler that in some cases an args is array-like?
  */
 noh.organize = function(args, opt_ignore, opt_result) {
 
@@ -329,21 +330,21 @@ noh.Node = function() {
   /**
    * @type {noh.Node}
    */
-  this.parent = null;
+  this.parent;
 
   /**
    * the dom property have to be overriden in derivatives!
-   * @type {noh.Node}
+   * @type {!Node}
    */
-  this.dom = null;
+  this.dom;
 
   /**
    * The jQuery object representing this node.
    * the $ property have to be overriden in derivatives!
    * TODO: better type description?
-   * @type {Object}
+   * @type {!Object}
    */
-  this.$ = null;
+  this.$;
 };
 
 
@@ -392,7 +393,7 @@ noh.Node.prototype.attachToDOM = function(root) {
 
 /**
  * Detaches a node from given DOM root element
- * @param {!noh.Node} root
+ * @param {!Node} root
  * @return {!noh.Node} this (for chaining)
  */
 noh.Node.prototype.detachFromDOM = function(root) {
@@ -475,7 +476,7 @@ noh.Element.prototype.css = function(name, value) {
  * (just a convenient shortcut for typical jQuery method invocation)
  * @see http://api.jquery.com/on/#on-events-selector-data-handlereventObject
  * @param {string} events One or more space separated events (usually its just one word like: "click")
- * @param {string} handler A function to execute when the event is triggered.
+ * @param {function(Object=):(boolean|undefined)} handler A function to execute when the event is triggered.
  * @return {!noh.Element} this (for chaining)
  */
 noh.Element.prototype.on = function(events, handler) {
@@ -485,7 +486,7 @@ noh.Element.prototype.on = function(events, handler) {
 
 /**
  * Add one or more classes to element's "class" attribute
- * @param {string} class One or more space-separated classes to add to the class attribute
+ * @param {string} aclass One or more space-separated classes to add to the class attribute
  * @return {!noh.Element} this (for chaining)
  */
 noh.Element.prototype.addclass = function(aclass) {
@@ -507,7 +508,7 @@ noh.Element.prototype.toggleclass = function(aclass) {
 
 /**
  * Remove one or more classes from element's "class" attribute
- * @param {string} class One or more space-separated classes to be removed from the class attribute
+ * @param {string} aclass One or more space-separated classes to be removed from the class attribute
  * @return {!noh.Element} this (for chaining)
  */
 noh.Element.prototype.remclass = function(aclass) {
@@ -572,7 +573,7 @@ noh.table1r = function(var_args) {
 noh.tablebar = function(var_args) {
     var an = noh.organize(arguments);
     var cells = [];
-    for(var x = 0; x < an.children.length; ++x)
+    for(var x = 0; x < an.nodes.length; ++x)
         cells.push(noh.td(an.nodes[x]));
     return noh.table1r({"class":"noh bar"}, an.attrs, cells);
 };
@@ -624,7 +625,7 @@ noh.ex.color = function(color) {
 //TODO: insert this code to introduction as an example of simplest "template".
 //TODO: write in introduction that first examples are written so even javascript beginner should be able to understand it
 /**
- * @param {number} How many colors we want
+ * @param {number} len How many colors we want
  */
 noh.ex.rainbow = function(len) {
   var arr = [];
@@ -1149,7 +1150,7 @@ noh.Reel.prototype.getelem = function(nr) {
 
 /**
  * Update the reel properties like size, elements positions, CSS classes etc.
- * @param {number} opt_lines Optionally we can change the number of visible elements.
+ * @param {number=} opt_lines Optionally we can change the number of visible elements.
  * @return {!noh.Reel} this (for chaining)
  */
 noh.Reel.prototype.update = function(opt_lines) {
@@ -1194,13 +1195,13 @@ noh.Reel.prototype.rotate = function(count) {
  * Rotates the reel many times with time gaps
  * @param {number} count How many lines to rotate down. (Negative means up)
  * @param {number=} opt_random If specified, the reel will generate random number between 0 and opt_random, and add it to param count.
- * @param {number=} opt_speed Defines how many milisecond to wait between single rotations. Default is 200
+ * @param {number=} opt_time Defines how many milisecond to wait between single rotations. Default is 200
  * @return {!noh.Reel} this (for chaining)
  */
 noh.Reel.prototype.spin = function(count, opt_random, opt_time) {
   if(this.intervalId_) {
     console.error("The reel is already spinning!");
-    return;
+    return this;
   }
   if(opt_random)
     count += Math.round(Math.random() * opt_random);
@@ -1221,6 +1222,7 @@ noh.Reel.prototype.spin = function(count, opt_random, opt_time) {
     }
   };
   this.intervalId_ = window.setInterval(callback, time);
+  return this;
 };
 
 /**
@@ -1237,6 +1239,9 @@ noh.reel = function(lines, width, height, var_args) {
 };
 
 
+
+/** @typedef undefined */ //TODO: It will be a record type in future
+noh.FancyOptions;
 
 /**
  * Makes given element more fancy.
@@ -1292,8 +1297,8 @@ noh.log = {};
 
 
 
-/** @typedef {!ArrayLike.<*>} */
-noh.log.Data; //FIXME: how to express ArrayLike type?
+/** @typedef {!Object} */
+noh.log.Data; //FIXME: how to express ArrayLike type? (like: ArrayLike.<*>)
 
 
 /**
@@ -1320,6 +1325,7 @@ noh.log.ILogger = function() {};
  * Logs given data with given severity
  * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
  * @param {noh.log.Data} data Data to log. It has to be an array like object.
+ * @return {!noh.log.ILogger} this (for chaining)
  */
 noh.log.ILogger.prototype.log = function(classes, data) {};
 
@@ -1343,19 +1349,21 @@ noh.log.Little.prototype = new noh.Element("div");
 /**
  * Logs given data with given severity
  * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
- * @param {!Array.<*>} data Data to log. It has to be an array like object.
+ * @param {noh.log.Data} data Data to log. It has to be an array like object.
+ * @return {!noh.log.Little} this (for chaining)
  */
 noh.log.Little.prototype.log = function(classes, data) { 
   if(this.length)
     this.rem(); // removes last (in this case only one) child.
   var ukbd = noh.ukbd(noh.log.data2str(data)).addclass("noh log element").addclass(classes);
   this.add(ukbd);
+  return this;
 };
 
 
 /**
  * Little (one line) logger.
- * @return {!noh.log.ILogger}
+ * @return {!noh.log.Little}
  */
 noh.log.little = function() {
   return new noh.log.Little();
@@ -1365,7 +1373,7 @@ noh.log.little = function() {
 /**
  * Sleepy little logger
  * @param {number=} opt_duration How many miliseconds will it be visible. See {@linkcode noh.sleepy}
- * @return {!noh.log.ILogger}
+ * @return {!noh.Element}
  */
 noh.log.slittle = function(opt_duration) {
   var little = noh.log.little();
@@ -1393,24 +1401,28 @@ noh.log.IConsole = function() {};
 /**
  * Logs given data with default (general) severity. Usually this is the same as "info"
  * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
+ * @return {!noh.log.IConsole} this (for chaining)
  */
 noh.log.IConsole.prototype.log = function(var_args) {};
 
 /**
  * Logs given data with "info" (normal) severity. Usually this is the same as "log"
  * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
+ * @return {!noh.log.IConsole} this (for chaining)
  */
 noh.log.IConsole.prototype.info = function(var_args) {};
 
 /**
  * Logs given data with "warn" (warning) severity. Usually this severity is marked somehow (like bold font), but not with red color.
  * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
+ * @return {!noh.log.IConsole} this (for chaining)
  */
 noh.log.IConsole.prototype.warn = function(var_args) {};
 
 /**
  * Logs given data with "error" severity. Usually this severity is highlighted (f.e. with red bold font).
  * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
+ * @return {!noh.log.IConsole} this (for chaining)
  */
 noh.log.IConsole.prototype.error = function(var_args) {};
 
@@ -1432,31 +1444,41 @@ noh.log.L2C = function(logger) {
 /**
  * Logs given data with default (general) severity. This is the same as "info"
  * @param {...*} var_args Data to log. Strings are printed as they are; numbers are converted to strings; Objects are converted to strings using .toString() method.
+ * @return {!noh.log.L2C} this (for chaining)
  */
-noh.log.L2C.prototype.log = function(var_args) { this.logger.log("info", arguments); };
+noh.log.L2C.prototype.log = function(var_args) { this.logger.log("info", arguments); return this; };
 
 /**
  * Logs given data with "info" (normal) severity.
  * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
+ * @return {!noh.log.L2C} this (for chaining)
  */
-noh.log.L2C.prototype.info = function(var_args) { this.logger.log("info", arguments); };
+noh.log.L2C.prototype.info = function(var_args) { this.logger.log("info", arguments); return this; };
 
 /**
  * Logs given data with "warn" (warning) severity. Usually this severity is marked somehow (like bold font), but not with red color.
  * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
+ * @return {!noh.log.L2C} this (for chaining)
  */
-noh.log.L2C.prototype.warn = function(var_args) { this.logger.log("warning", arguments); };
+noh.log.L2C.prototype.warn = function(var_args) { this.logger.log("warning", arguments); return this; };
 
 /**
  * Logs given data with "error" severity. Usually this severity is highlighted (f.e. with red bold font).
  * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
+ * @return {!noh.log.L2C} this (for chaining)
  */
-noh.log.L2C.prototype.error = function(var_args) { this.logger.log("error", arguments); };
+noh.log.L2C.prototype.error = function(var_args) { this.logger.log("error", arguments); return this; };
 
-noh.log.L2C.prototype.debug = function(var_args) { this.logger.log("debug", arguments); };
+/**
+ * Logs given data with "debug" severity.
+ * @param {...*} var_args Data to log. {@linkcode noh.log.IConsole.prototype.log}
+ * @return {!noh.log.L2C} this (for chaining)
+ */
+noh.log.L2C.prototype.debug = function(var_args) { this.logger.log("debug", arguments); return this; };
 
 /**
  * Installs this console as a global console object.
+ * @suppress {checkTypes}
  */
 noh.log.L2C.prototype.install = function() { window.console = this; };
 
@@ -1465,7 +1487,7 @@ noh.log.L2C.prototype.install = function() { window.console = this; };
  * Wraps an ILogger object into IConsole.
  * This console can be then installed as global console object (window.console), so all system logs will be logged using given logger.
  * @param {!noh.log.ILogger} logger
- * @return {!noh.log.IConsole}
+ * @return {!noh.log.L2C}
  */
 noh.log.l2c = function(logger) {
   return new noh.log.L2C(logger);  
@@ -1478,7 +1500,7 @@ noh.log.l2c = function(logger) {
 
 /**
  * Wraps an IConsole object into ILogger.
- * @implements {noh.ILogger}
+ * @implements {noh.log.ILogger}
  * @constructor
  * @param {!noh.log.IConsole} console A console to wrap.
  */
@@ -1489,7 +1511,8 @@ noh.log.C2L = function(console) {
 /**
  * Logs given data with given severity
  * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
- * @param {!Array.<*>} data Data to log. It has to be an array like object.
+ * @param {noh.log.Data} data Data to log. It has to be an array like object.
+ * @return {!noh.log.C2L} this (for chaining)
  */
 noh.log.C2L.prototype.log = function(classes, data) {
   if(/error/.test(classes))
@@ -1500,13 +1523,14 @@ noh.log.C2L.prototype.log = function(classes, data) {
     this.console.debug.apply(this.console, data);
   else
     this.console.info.apply(this.console, data);
+  return this;
 };
 
 
 /**
  * Wraps an IConsole object into ILogger.
  * @param {!noh.log.IConsole} console
- * @return {!noh.log.ILogger}
+ * @return {!noh.log.C2L}
  */
 noh.log.c2l = function(console) {
   return new noh.log.C2L(console);
@@ -1525,14 +1549,21 @@ noh.log.Multi = function(loggers) {
   this.loggers = loggers;
 };
 
+/**
+ * Logs given data with given severity to multiple loggers
+ * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
+ * @param {noh.log.Data} data Data to log. It has to be an array like object.
+ * @return {!noh.log.Multi} this (for chaining)
+ */
 noh.log.Multi.prototype.log = function(classes, data) {
   for(var i = 0; i < this.loggers.length; ++i)
     this.loggers[i].log(classes, data);
+  return this;
 };
 
 /**
- * @param {Array.<!noh.ILogger>} loggers
- * @return {!noh.ILogger}
+ * @param {Array.<!noh.log.ILogger>} loggers
+ * @return {!noh.log.Multi}
  */
 noh.log.multi = function(loggers) {
   return new noh.log.Multi(loggers);
@@ -1553,14 +1584,21 @@ noh.log.Filter = function(logger, filter) {
   this.filter = filter;
 };
 
+/**
+ * Logs given data with given severity after filtering it.
+ * @param {string} classes One or more (space separated) classes to decorate the logged message (like: "info", or "warning", or "error", or "debug")
+ * @param {noh.log.Data} data Data to log. It has to be an array like object.
+ * @return {!noh.log.Filter} this (for chaining)
+ */
 noh.log.Filter.prototype.log = function(classes, data) {
   this.logger.log(classes, this.filter(data));
+  return this;
 };
 
 /**
  * @param {!noh.log.ILogger} logger
  * @param {function(noh.log.Data):noh.log.Data} filter
- * @return {!noh.ILogger}
+ * @return {!noh.log.Filter}
  */
 noh.log.filter = function(logger, filter) {
   return new noh.log.Filter(logger, filter);
@@ -1571,7 +1609,7 @@ noh.log.filter = function(logger, filter) {
 /**
  * TODO: description
  * @param {!noh.log.ILogger} logger
- * @return {!noh.ILogger}
+ * @return {!noh.log.ILogger}
  */
 noh.log.addtime = function(logger) {
   var filter = function(data) {
@@ -1595,7 +1633,7 @@ noh.log.addtime = function(logger) {
  * TODO: description
  * @param {!noh.log.ILogger} logger
  * @param {number} len
- * @return {!noh.ILogger}
+ * @return {!noh.log.ILogger}
  */
 noh.log.limitlen = function(logger, len) {
   var filter = function(data) {
@@ -1613,7 +1651,7 @@ noh.log.limitlen = function(logger, len) {
  * Creates a logger that uses Reel to rotate log lines.
  * @param {number} lines Number of visible lines.
  * @param {number=} opt_duration How many miliseconds will any log line be visible. See {@linkcode noh.log.slittle}
- * @return {!noh.log.ILogger}
+ * @return {!noh.Element}
  */
 noh.log.reel = function(lines, opt_duration) {
   //TODO: validation of lines value in debug mode
@@ -1644,6 +1682,12 @@ noh.log.reel = function(lines, opt_duration) {
 
 
 
+/**
+ * TODO: desc
+ * @param {number} len
+ * @param {string=} opt_placeholder
+ * @return {!noh.Element}
+ */
 noh.cmdline = function(len, opt_placeholder) {
   var placeholder = opt_placeholder || 'alert("hello world")';
   var input = noh.input().attr('type', 'text').attr('size', len).attr('placeholder', placeholder).addclass('noh cmdline');
@@ -1783,13 +1827,13 @@ noh.MenuItem.prototype = new noh.Element("div");
  * This method should be overriden if we want to add some new fuctionality when the state is changing;
  * but you should call the original toggle anyway
  */
-noh.MenuItem.prototype.toggle = function() { this.toggleclass("selected"); };
+noh.MenuItem.prototype.toggle = function() { this.toggleclass("selected"); return this; };
 
 noh.MenuItem.prototype.selected = function() { return this.hasclass("selected"); };
 
 /**
  * @param {noh.Node|string} content Usually it is just a text to display, but it can be any noh.Node.
- * @return {noh.MenuItem}
+ * @return {!noh.MenuItem}
  */
 noh.menuitem = function(content) { return new noh.MenuItem(content); };
 
@@ -1807,7 +1851,7 @@ noh.bigmenuitem = function(item, payload) {
     noh.div(oneof)
   );
   item.toggle_orig_ = item.toggle;
-  item.toggle = function() { bigmenuitem.toggle(); };
+  item.toggle = function() { bigmenuitem.toggle(); return this; };
   /** @this {noh.Element} */
   bigmenuitem.toggle = function() {
     item.toggle_orig_();  
@@ -1839,7 +1883,7 @@ noh.Menu = function(var_args) {
   this.items_ = an.nodes;
 
   for(var i = 0; i < this.items_.length; ++i) {
-    var item = this.items[i];
+    var item = this.items_[i];
     if(item.selected())
       item.toggle();
     item.menu_ = this;
@@ -1867,9 +1911,11 @@ noh.Menu.prototype.select = function(idx) {
   this.selected_ = idx;
 
   if(idx == -1)
-    return;
+    return this;
 
   this.items_[idx].toggle_orig_(); //selects new item
+
+  return this;
 };
 
 

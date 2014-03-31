@@ -43,7 +43,8 @@ $(document).ready(noh_tests_init);
 /**
  * Special div for tests. Contains strong border (double), big margin and big padding
  * The reason is to be clearly visible and distinguishable from other elements.
- * @param {...noh.AttrsAndNodes} as always..
+ * @param {...noh.AttrsAndNodes} var_args as always..
+ * @return {!noh.Element}
  */
 function tdiv(var_args) {
   return noh.div({"class":"noh stest"}, arguments);
@@ -436,6 +437,7 @@ tests.reel_crazy = function() {
     dw3.tick();
   };
 
+  /** @this {noh.Reel} */
   obj.stop = function() {
     if(this.intervalId)
       window.clearInterval(this.intervalId);
@@ -484,7 +486,7 @@ tests.log_multi = function() {
   var slittle1 = noh.log.slittle(1000);
   var slittle2 = noh.log.slittle(2000);
   var slittle3 = noh.log.slittle(3000);
-  var c2l = noh.log.c2l(window.console);
+  var c2l = noh.log.c2l(/** @type {!noh.log.IConsole} */(window.console));
   var multi = noh.log.multi([slittle1, slittle2, slittle3, c2l]);
   var obj = noh.div(slittle1, slittle2, slittle3);
   obj.log = function(classes, data) { multi.log(classes, data); };
@@ -524,7 +526,7 @@ function install_logger(logger) {
 
     noh.log.multi([
 
-      noh.log.c2l(window.console),
+      noh.log.c2l(/** @type {!noh.log.IConsole} */(window.console)),
 
       noh.log.limitlen(
         noh.log.addtime(
