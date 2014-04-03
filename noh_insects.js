@@ -21,23 +21,42 @@ TODO: generowanie drogi:
 
 
 
+/**
+ * @param {number|string} x
+ * @param {number|string} y
+ * @return {!noh.Element}
+ */
 noh.Element.prototype.pos = function(x, y) {
   return this
     .css('left', x)
     .css('top', y);
 };
 
+/**
+ * @param {number|string} width
+ * @param {number|string} height
+ * @return {!noh.Element}
+ */
 noh.Element.prototype.size = function(width, height) {
   return this
     .css('width', width)
     .css('height', height);
 };
 
+/**
+ * @param {number} dx
+ * @param {number} dy
+ * @return {!noh.Element}
+ */
 noh.Element.prototype.move = function(dx, dy) {
   var pos = this.$.position();
-  this.pos(pos.left + dx, pos.top + dy);
+  return this.pos(pos.left + dx, pos.top + dy);
 };
 
+/**
+ * @param {string} origin
+ * @return {!noh.Element}
+ */
 noh.Element.prototype.torig = function(origin) {
   return this
     .css('transform-origin', origin)
@@ -46,8 +65,12 @@ noh.Element.prototype.torig = function(origin) {
     .css('-o-transform-origin', origin);
 };
 
+/**
+ * @param {string} transform
+ * @return {!noh.Element}
+ */
 noh.Element.prototype.trans = function(transform) {
-  this
+  return this
     .css('transform', transform)
     .css('-webkit-transform', transform)
     .css('-moz-transform', transform)
@@ -55,11 +78,22 @@ noh.Element.prototype.trans = function(transform) {
 };
 
 
+/**
+ * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes. See {@linkcode noh.organize} for more detailed explanation about attributes and children parameters.
+ * @return {!noh.Element} A div element with position:absolute
+ */
 noh.adiv = function(var_args) {
   return noh.div(arguments).css('position', 'absolute');
 };
 
 
+/**
+ * @param {number|string=} opt_width
+ * @param {number|string=} opt_height
+ * @param {string=} opt_color
+ * @param {number|string=} opt_radius
+ * @return {!noh.Element}
+ */
 noh.rect = function(opt_width, opt_height, opt_color, opt_radius) {
   var rect = noh.adiv().size(
     opt_width === undefined ? '100px' : opt_width,
@@ -74,54 +108,90 @@ noh.rect = function(opt_width, opt_height, opt_color, opt_radius) {
 
 
 
-function min(n1, n2) { return n2 < n1 ? n2 : n1; }
-function max(n1, n2) { return n1 < n2 ? n2 : n1; }
+/**
+ * @param {number} n1
+ * @param {number} n2
+ * @return {number}
+ */
+function min(n1, n2) { return n2 < n1 ? n2 : n1; };
+
+/**
+ * @param {number} n1
+ * @param {number} n2
+ * @return {number}
+ */
+function max(n1, n2) { return n1 < n2 ? n2 : n1; };
 
 
 
-/*
+/**
  * It can be used pretty much just like a normal number, but it returns everytime a little bit
  * different value...
+ * @constructor
  * @param {number} value The nominal value this object will represent
  * @param {number=} opt_varless how much smaller the returned values can be (default=value)
  * @param {number=} opt_varmore how much bigger the returned values can be (default=opt_varless)
- * Try: var number = new FuzzyNumber(10,2,7); for(var i = 0; i < 30; ++i) console.log(number+0);
+ * Try: var number = new noh.FuzzyNumber(10,2,7); for(var i = 0; i < 30; ++i) console.log(number+0);
  * to see how it works. (arithmetic expression number+0 forces javascript to use valueOf method)
  * Generally this class gives us some kind of a lazy evaluation - the valueOf method is used only
- * when our FuzzyNumber is used in some kind of an arithmetic expression.
+ * when our noh.FuzzyNumber is used in some kind of an arithmetic expression.
  */
-function FuzzyNumber(value, opt_varless, opt_varmore) {
+noh.FuzzyNumber = function(value, opt_varless, opt_varmore) {
   this.value = value;
   this.varless = opt_varless === undefined ? value : opt_varless;
   this.varmore = opt_varmore === undefined ? this.varless : opt_varmore;
-}
+};
 
-FuzzyNumber.prototype.valueOf = function() {
-  var vl = this.varless.valueOf(); // in case varless is fuzzy - we just want to get ONE number.
-  var vm = this.varmore.valueOf(); // in case varmore is fuzzy - we just want to get ONE number.
+/**
+ * @return {number}
+ */
+noh.FuzzyNumber.prototype.valueOf = function() {
+  var vl = /** @type {number} */(this.varless.valueOf()); // in case varless is fuzzy - we just want to get ONE number.
+  var vm = /** @type {number} */(this.varmore.valueOf()); // in case varmore is fuzzy - we just want to get ONE number.
   return this.value - vl + Math.random() * (vl + vm);
 };
 
 
+/**
+ * @param {number} value The nominal value this object will represent
+ * @param {number=} opt_varless how much smaller the returned values can be (default=value)
+ * @param {number=} opt_varmore how much bigger the returned values can be (default=opt_varless)
+ */
 function fnum(value, opt_varless, opt_varmore) {
-  return new FuzzyNumber(value, opt_varless, opt_varmore);
+  return new noh.FuzzyNumber(value, opt_varless, opt_varmore);
 }
 
 
+/**
+ * @typedef {!noh.FuzzyNumber|number}
+ */
+noh.FNum;
 
 
-
+/**
+ * @param {noh.FNum} x 
+ * @param {noh.FNum} y
+ * @param {noh.FNum=} opt_speed How far it aims every time (in pixels).
+ * @param {noh.FNum=} opt_agility How often it changes direction (in seconds)
+ * @param {noh.FNum=} opt_ttl Afte how many ticks we disappear (undefined means we do not)
+ * @return {!noh.Element}
+ */
 noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
 
   var fly = noh.rect(4, 4).css('position', 'fixed');
 
 
   fly.speed = opt_speed || 70; // how far it aims every time (in pixels)
-  fly.agility = opt_agility || 0.3; // how often it changes direction (in seconds)
-  fly.agility = fly.agility.valueOf() // in case our agility is fuzzy
-  fly.ttl = opt_ttl // time to live - after how many ticks we disappear (undefined means we do not)
+  fly.agility = opt_agility === undefined ? 0.3 : /** @type {number} */ (opt_agility.valueOf()); // how often it changes direction (in seconds) (valueOf in case our agility is fuzzy)
+  fly.ttl = opt_ttl; // time to live - after how many ticks we disappear (undefined means we do not)
 
 
+  /**
+   * @this {!noh.Element}
+   * @param {number} x
+   * @param {number} y
+   * @param {number} z It changes the shadow between the fly, so it looks like it is above the screen at certain height
+   */
   fly.aim = function(x, y, z) {
     if(z < 0)
       z = 0; // the fly will land
@@ -135,6 +205,9 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
 
   fly.css('transition', 'all 0s').aim(x, y, 0).css('transition', 'all ' + (fly.agility * 1.2) + 's linear');
 
+  /**
+   * @this {!noh.Element}
+   */
   fly.tick = function() {
     if(this.ttl !== undefined && --this.ttl <= 0) {
       this.stop();
@@ -142,7 +215,7 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
     }
     if(this.z == 0 && Math.random() < 0.9)
       return;
-    var s = this.speed.valueOf(); // in case our speed is fuzzy
+    var s = /** @type {number} */(this.speed.valueOf()); // in case our speed is fuzzy
     var z = Math.random() * 40 - 5;
     if(this.z == 0 && z <= 0) // we are walking - not flying
       s /= 6;
@@ -153,12 +226,18 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
 
   var callback = function() { fly.tick(); };
 
+  /**
+   * @this {!noh.Element}
+   */
   fly.stop = function() {
     if(this.intervalId_)
       window.clearInterval(this.intervalId_);
     this.intervalId_ = undefined;
   };
 
+  /**
+   * @this {!noh.Element}
+   */
   fly.start = function() {
     if(this.intervalId_)
       this.stop();
@@ -168,59 +247,60 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
   return fly;
 };
 
+/**
+ * @typedef {{
+ *  depth:(noh.FNum|undefined),
+ *  breadth:(noh.FNum|undefined),
+ *  spread:(noh.FNum|undefined),
+ *  trunkw:(number|undefined),
+ *  trunkw_factor:(noh.FNum|undefined),
+ *  trunkh:(number|undefined),
+ *  trunkh_factor:(noh.FNum|undefined),
+ *  light:(noh.FNum|undefined)}}
+ */
+noh.TreeOptions;
 
 
-
-
-
-noh.tree_old  = function(opt_level, opt_trunkw, opt_trunkh) {
-  var level = opt_level === undefined ? 5 : opt_level;
-  var trunkw = opt_trunkw || 10;
-  var trunkh = opt_trunkh || 100;
-  return noh.tree_old_rec_(level, trunkw, trunkh);
-};
-
-noh.tree_old_rec_ = function(level, trunkw, trunkh) {
-  var trunk = noh.rect(trunkw, trunkh).pos(-trunkw/2, -trunkh);
-  if(level <= 1)
-    return noh.adiv(trunk);
-  var t1 = noh.tree_old_rec_(level-1, max(1, trunkw*3/4), trunkh*(3+Math.random()*3)/5);
-  var t2 = noh.tree_old_rec_(level-1, max(1, trunkw*3/4), trunkh*(3+Math.random()*2)/5);
-
-  t1.pos(0, -trunkh+trunkw);
-  t2.pos(0, -trunkh+trunkw);
-
-  var r = 8 + Math.random() * 25;
-  if(level % 1)
-    r = -r + Math.random() * 20 - 10;
-  t1.torig('0px 0px').trans('rotate(' + r + 'deg)');
-  r = -r;
-  t2.torig('0px 0px').trans('rotate(' + r + 'deg)');
-  return noh.adiv(trunk, t1, t2);
-};
-
+/**
+ * @param {!noh.TreeOptions=} opt_options
+ */
 noh.tree = function(opt_options) {
-  var opt = $.extend({}, noh.tree.options, opt_options);
-  return noh.tree_rec_(opt.depth, opt.trunkw, opt.trunkh, opt);
+  var opt = /** @type {!noh.TreeOptions} */($.extend({}, noh.tree.options, opt_options));
+  return noh.tree_rec_(
+    /** @type {noh.FNum} */(opt.depth),
+    /** @type {number} */(opt.trunkw),
+    /** @type {number} */(opt.trunkh),
+    opt
+  );
 };
 
+/**
+ * @type {!noh.TreeOptions}
+ */
 noh.tree.options = { // defaults
   depth: 4, // levels of recursion
   breadth: 3, //how many subtrees will grow on each side of the tree trunk.
   spread: 40, // maximum rotation angle of subtree connected to the trunk (in degrees).
   trunkw: 6, // width of the trunk (in pixels)
+  trunkh: 200, // height of the trunk (in pixels)
   trunkw_factor: 3/4, // trunk width is multiplied by this factor for next level tree (0..1)
   trunkh_factor: 3/5, // trunk height is multiplied by this factor for next level tree (0..1)
-  trunkh: 200, // height of the trunk (in pixels)
   light: 1 // what part of the trunk can have some branches (subtrees) (0..1)
 };
 
+
+/**
+ * @param {noh.FNum} depth
+ * @param {number} trunkw
+ * @param {number} trunkh
+ * @param {!noh.TreeOptions} opt
+ */
 noh.tree_rec_ = function(depth, trunkw, trunkh, opt) {
   var trunk = noh.rect(trunkw, trunkh).pos(-trunkw/2, -trunkh);
   if(depth <= 1)
     return noh.adiv(trunk);
   var subtrees = [];
-  var b = opt.breadth.valueOf(); // in case the breadth is fuzzy
+  var b = /** @type {number} */ (opt.breadth.valueOf()); // in case the breadth is fuzzy
   for(var i = 0; i < Math.floor(b); ++i) {
     var tl = noh.tree_rec_(depth-1, max(1, trunkw*opt.trunkw_factor), trunkh*opt.trunkh_factor, opt);
     var tr = noh.tree_rec_(depth-1, max(1, trunkw*opt.trunkw_factor), trunkh*opt.trunkh_factor, opt);

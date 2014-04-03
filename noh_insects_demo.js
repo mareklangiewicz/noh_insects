@@ -52,21 +52,14 @@ function noh_insects_demo() {
 
 noh.demo_trees = function() {
   var trees = [];
-  trees.push(noh.tree_old(5, 9, 60).css('position', 'fixed').pos(200, $(window).height()));
-  trees.push(noh.tree_old(5, 9, 60).css('position', 'fixed').pos(400, $(window).height()));
-  trees.push(noh.tree_old(7, 12, 100).css('position', 'fixed').pos(600, $(window).height()));
-  trees.push(noh.tree_old(7, 12, 100).css('position', 'fixed').pos(800, $(window).height()));
-  trees.push(noh.tree_old(7, 12, 100).css('position', 'fixed').pos(1000, $(window).height()));
-  trees.push(noh.tree_old(7, 12, 100).css('position', 'fixed').pos(1000, $(window).height()));
+  trees.push(noh.tree({ depth: 5, breadth: 1, spread: fnum(20, 15), trunkw:  8, trunkh:  60, trunkh_factor: fnum(0.82, 0.3) }).pos( 200, $(window).height()));
+  trees.push(noh.tree({ depth: 5, breadth: 1, spread: fnum(20, 15), trunkw:  8, trunkh:  60, trunkh_factor: fnum(0.82, 0.3) }).pos( 400, $(window).height()));
+  trees.push(noh.tree({ depth: 7, breadth: 1, spread: fnum(20, 15), trunkw: 12, trunkh: 100, trunkh_factor: fnum(0.82, 0.3) }).pos( 600, $(window).height()));
+  trees.push(noh.tree({ depth: 7, breadth: 1, spread: fnum(20, 15), trunkw: 12, trunkh: 100, trunkh_factor: fnum(0.82, 0.3) }).pos( 800, $(window).height()));
+  trees.push(noh.tree({ depth: 7, breadth: 1, spread: fnum(20, 15), trunkw: 12, trunkh: 100, trunkh_factor: fnum(0.82, 0.3) }).pos(1000, $(window).height()));
+  trees.push(noh.tree({ depth: 7, breadth: 1, spread: fnum(20, 15), trunkw: 12, trunkh: 100, trunkh_factor: fnum(0.82, 0.3) }).pos(1000, $(window).height()));
   if(navigator.userAgent.indexOf("Chrome") != -1)
-    trees.push(noh.tree({
-        depth: 10,
-        breadth: 1,
-        spread: fnum(20, 15),
-        trunkw: 34,
-        trunkh: 140,
-        trunkh_factor: fnum(0.8, 0.2)
-      }).css('position', 'fixed').pos(1300, $(window).height()));
+  trees.push(noh.tree({ depth:10, breadth: 1, spread: fnum(20, 15), trunkw: 34, trunkh: 140, trunkh_factor: fnum( 0.8, 0.2) }).pos(1300, $(window).height()));
   return noh.div(trees);
 };
 

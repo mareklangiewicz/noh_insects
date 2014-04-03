@@ -28,7 +28,8 @@ $(document).ready(noh_insects_tests_init);
 /**
  * Special div for tests. Contains strong border (double), big margin and big padding
  * The reason is to be clearly visible and distinguishable from other elements.
- * @param {...noh.AttrsAndNodes} as always..
+ * @param {...noh.AttrsAndNodes} var_args as always..
+ * @return {!noh.Element}
  */
 function tdiv(var_args) {
   return noh.div({"class":"noh stest"}, arguments);
@@ -56,7 +57,6 @@ function runstest(f) {
       noh.li(noh.h4("Result:"), tdiv(node))
     )
   );
-  return tdiv(node);
 }
 
 
@@ -139,7 +139,7 @@ function install_logger(logger) {
 
     noh.log.multi([
 
-      noh.log.c2l(window.console),
+      noh.log.c2l(/** @type {!noh.log.IConsole} */(window.console)),
 
       noh.log.limitlen(
         noh.log.addtime(
@@ -179,16 +179,29 @@ tests.rect = function() {
 
 
 
+/**
+ * @param {noh.FNum} number
+ * @param {number|string=} opt_width
+ * @param {number|string=} opt_height
+ * @return {!noh.Element}
+ */
 noh.fuzzytester = function(number, opt_width, opt_height) {
   var tester = noh.div()
     .css('position', 'relative')
     .size(opt_width === undefined ? '300px' : opt_width,
         opt_height === undefined ? '300px' : opt_height);
 
+  /**
+   * @this {!noh.Element}
+   */
   tester.clear = function() {
     while(this.length > 0)
       this.rem();
   };
+
+  /**
+   * @this {!noh.Element}
+   */
   tester.test = function() {
     for(var i = 0; i < 100; ++i) {
       var r = noh.rect(4,4,'blue',3).pos('' + (0 + number) + '%', '' + i + '%');
@@ -318,107 +331,6 @@ tests.fly_click = function() {
 
 
 
-tests.tree1_old = function() {
-
-  var obj = noh.div(noh.tree_old(1, 10, 50).pos(200, 300))
-    .css('position', 'relative')
-    .css('width', '500px')
-    .css('height', '400px');
-
-  return noh.objtest(obj, [
-    'obj.css("width", "100px")',
-    'obj.css("width", "20px")',
-    'obj.trans("rotate(0deg)")',
-    'obj.trans("rotate(40deg)")',
-    'obj.trans("rotate(80deg)")',
-    'obj.trans("rotate(140deg)")',
-    'obj.torig("0px 0px")',
-    'obj.torig("30px 0px")',
-    'obj.torig("30px 30px")'
-  ]).addclass("smooth");
-};
-
-tests.tree2_old = function() {
-
-  var obj = noh.div(noh.tree_old(2, 10, 100).pos(200, 300))
-    .css('position', 'relative')
-    .css('width', '500px')
-    .css('height', '400px');
-
-  return noh.objtest(obj, [
-    'obj.css("width", "100px")',
-    'obj.css("width", "20px")',
-    'obj.trans("rotate(0deg)")',
-    'obj.trans("rotate(40deg)")',
-    'obj.trans("rotate(80deg)")',
-    'obj.trans("rotate(140deg)")',
-    'obj.torig("0px 0px")',
-    'obj.torig("30px 0px")',
-    'obj.torig("30px 30px")'
-  ]).addclass("smooth");
-};
-
-tests.tree3_old = function() {
-
-  var obj = noh.div(noh.tree_old(5, 9, 60).pos(200, 300))
-    .css('position', 'relative')
-    .css('width', '500px')
-    .css('height', '400px');
-
-  return noh.objtest(obj, [
-    'obj.css("width", "100px")',
-    'obj.css("width", "20px")',
-    'obj.trans("rotate(0deg)")',
-    'obj.trans("rotate(40deg)")',
-    'obj.trans("rotate(80deg)")',
-    'obj.trans("rotate(140deg)")',
-    'obj.torig("0px 0px")',
-    'obj.torig("30px 0px")',
-    'obj.torig("30px 30px")'
-  ]).addclass("smooth");
-};
-
-tests.tree4_old = function() {
-
-  var obj = noh.div(noh.tree_old(7, 12, 100).pos(200, 300))
-    .css('position', 'relative')
-    .css('width', '500px')
-    .css('height', '400px');
-
-  return noh.objtest(obj, [
-    'obj.css("width", "100px")',
-    'obj.css("width", "20px")',
-    'obj.trans("rotate(0deg)")',
-    'obj.trans("rotate(40deg)")',
-    'obj.trans("rotate(80deg)")',
-    'obj.trans("rotate(140deg)")',
-    'obj.torig("0px 0px")',
-    'obj.torig("30px 0px")',
-    'obj.torig("30px 30px")'
-  ]).addclass("smooth");
-};
-
-
-tests.tree_def_old = function() {
-
-  var obj = noh.div(noh.tree_old().pos(200, 300))
-    .css('position', 'relative')
-    .css('width', '500px')
-    .css('height', '400px');
-
-  return noh.objtest(obj, [
-    'obj.css("width", "100px")',
-    'obj.css("width", "20px")',
-    'obj.trans("rotate(0deg)")',
-    'obj.trans("rotate(40deg)")',
-    'obj.trans("rotate(80deg)")',
-    'obj.trans("rotate(140deg)")',
-    'obj.torig("0px 0px")',
-    'obj.torig("30px 0px")',
-    'obj.torig("30px 30px")'
-  ]).addclass("smooth");
-};
-
 tests.tree_def = function() {
 
   var obj = noh.div(noh.tree().pos(200, 300))
@@ -462,7 +374,6 @@ tests.tree3 = function() {
 tests.tree4 = function() {
 
   var obj = noh.div(
-    noh.tree_old(6).pos(100, 300),
     noh.tree({
       depth: 6,
       breadth: 1,
