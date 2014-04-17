@@ -12,7 +12,7 @@ TODO: generowanie drogi:
 - najpierw tylko 2 duże drzewa po bokach, kliknięcie sadzi całą resztę od najbliższych (odrazu każde posadzone reaguje na wiatr)
 - sadzenie wzdłuż drogi, ale czasem też z boku - ale warstwami od najbliższych
 - perspektywa zagięta, tak, że droga wchodzi na 'pagórek' i za pagórkiem już nie widać
-- s pełnego lasu na horyzoncie rezygnujemy
+- z pełnego lasu na horyzoncie rezygnujemy
 - kolejne warsztwy coraz bardziej blade - nie przeźroczyste, tylko szare; delikatna zmiana tylko.
 - wiatr się z czasem ma rozhulać (globalna zmienna z siłą wiatru - żeby metoda 'tick' pozostała bezparametrowa)
 - po jakimś czasie powinno 'przywiać' na środek literki z informacją o bibliotece NOH
@@ -79,6 +79,28 @@ noh.Element.prototype.trans = function(transform) {
 
 
 /**
+ * This method will set CSS transform property of this element to just simple rotation with given angle (in degrees)
+ * @param {number} angle An angle of desired rotation. (in degrees)
+ * @return {!noh.Element}
+ */
+noh.Element.prototype.trans_rotate = function(angle) {
+  this.trans_rotate_angle_ = angle;
+  return this.trans('rotate(' + angle + 'deg)');
+};
+
+/**
+ * This method will modify element rotation set by trans_rotate by adding given angle to the base rotation.
+ * It can be reversed easily by trans_rotate_diff(0)
+ * @param {!noh.FNum} angle An angle of desired rotation adjustment. (in degrees)
+ * @return {!noh.Element}
+ */
+noh.Element.prototype.trans_rotate_diff = function(angle) {
+  if(this.trans_rotate_angle_ !== undefined)
+    angle = noh.num(angle) + this.trans_rotate_angle_;
+  return this.trans('rotate(' + angle + 'deg)');
+};
+
+/**
  * @param {...noh.AttrsAndNodes} var_args Attributes and children nodes. See {@linkcode noh.organize} for more detailed explanation about attributes and children parameters.
  * @return {!noh.Element} A div element with position:absolute
  */
@@ -113,53 +135,154 @@ noh.rect = function(opt_width, opt_height, opt_color, opt_radius) {
  * @param {number} n2
  * @return {number}
  */
-function min(n1, n2) { return n2 < n1 ? n2 : n1; };
+noh.min = function(n1, n2) { return n2 < n1 ? n2 : n1; };
 
 /**
  * @param {number} n1
  * @param {number} n2
  * @return {number}
  */
-function max(n1, n2) { return n1 < n2 ? n2 : n1; };
+noh.max = function(n1, n2) { return n1 < n2 ? n2 : n1; };
+
+
 
 
 
 /**
- * It can be used pretty much just like a normal number, but it returns everytime a little bit
- * different value...
+ * @constructor
+ * @param {Array.<!Object>} ticks This array should contain objects with .tick() method, or some plain functions (to call when ticker ticks)
+ * @param {number=} opt_interval Time interval between ticks in miliseconds.
+ */
+noh.Ticker = function(ticks, opt_interval) {
+  this.ticks = ticks;
+  this.interval = opt_interval === undefined ? 1000 : opt_interval;
+};
+
+/**
+ * Iterates through all ticks and calls the .tick() method (or just call the function if the object is plain function)
+ * @return {noh.Ticker}
+ */
+noh.Ticker.prototype.tick = function() {
+  for(var i = 0; i < this.ticks.length; ++i)
+    if(this.ticks[i].tick)
+      this.ticks[i].tick();
+    else if(typeof this.ticks[i] === "function")
+      /** @type {Function} */(this.ticks[i])();
+  return this;
+};
+
+
+/**
+ * Stops ticking.
+ * @return {noh.Ticker}
+ */
+noh.Ticker.prototype.stop = function() {
+  if(this.intervalId_ !== undefined)
+    window.clearInterval(this.intervalId_);
+  this.intervalId_ = undefined;
+  return this;
+};
+
+
+/**
+ * Starts ticking.
+ * @return {noh.Ticker}
+ */
+noh.Ticker.prototype.start = function() {
+  this.stop();
+  var this_ = this;
+  this.intervalId_ = window.setInterval(function() { this_.tick(); }, this.interval);
+  return this;
+};
+
+/**
+ * Checks if the ticker is ticking now.
+ * @return {boolean}
+ */
+noh.Ticker.prototype.started = function() { return this.intervalId_ !== undefined; };
+
+noh.Ticker.prototype.change_interval = function(interval) {
+  this.interval = interval;
+  if(this.started()) {
+    this.stop();
+    this.start();
+  }
+  return this;
+};
+
+
+/**
+ * Creates new noh.Ticker object
+ * @param {Array.<!Object>} ticks This array should contain objects with .tick() method, or some plain functions (to call when ticker ticks)
+ * @param {number=} opt_interval Time interval between ticks in miliseconds.
+ * @return {!noh.Ticker}
+ */
+noh.ticker = function(ticks, opt_interval) {
+  return new noh.Ticker(ticks, opt_interval);
+};
+
+
+
+
+/**
+ * It can be used pretty much just like a normal number, but it returns a little bit
+ * different value each time after you tick it...
  * @constructor
  * @param {number} value The nominal value this object will represent
  * @param {number=} opt_varless how much smaller the returned values can be (default=value)
  * @param {number=} opt_varmore how much bigger the returned values can be (default=opt_varless)
- * Try: var number = new noh.FuzzyNumber(10,2,7); for(var i = 0; i < 30; ++i) console.log(number+0);
+ * @param {boolean=} opt_autotick should every get invoke a tick first? (default=false)
+ * Try: var number = new noh.FuzzyNumber(10,2,7); for(var i = 0; i < 30; ++i) {number.tick(); console.log(number+0);}
  * to see how it works. (arithmetic expression number+0 forces javascript to use valueOf method)
+ * (more explicit way of getting the actual value would be number.get())
  * Generally this class gives us some kind of a lazy evaluation - the valueOf method is used only
  * when our noh.FuzzyNumber is used in some kind of an arithmetic expression.
+ * TODO: Define interface IFuzzyNumber, and rewrite this class as just one of possible implementation (TickNumber)
  */
-noh.FuzzyNumber = function(value, opt_varless, opt_varmore) {
+noh.FuzzyNumber = function(value, opt_varless, opt_varmore, opt_autotick) {
   this.value = value;
   this.varless = opt_varless === undefined ? value : opt_varless;
   this.varmore = opt_varmore === undefined ? this.varless : opt_varmore;
+  this.autotick = opt_autotick === undefined ? false : opt_autotick;
+  this.tick();
+};
+
+
+/**
+ * @return {!noh.FuzzyNumber}
+ */
+noh.FuzzyNumber.prototype.tick = function() {
+  var vl = /** @type {number} */(this.varless.valueOf()); // in case varless is fuzzy - we just want to get ONE number.
+  var vm = /** @type {number} */(this.varmore.valueOf()); // in case varmore is fuzzy - we just want to get ONE number.
+  this.actval = this.value - vl + Math.random() * (vl + vm);
+  return this;
+};
+
+/**
+ * @return {number}
+ */
+noh.FuzzyNumber.prototype.get = function() {
+  if(this.autotick)
+    this.tick();
+  return this.actval;
 };
 
 /**
  * @return {number}
  */
 noh.FuzzyNumber.prototype.valueOf = function() {
-  var vl = /** @type {number} */(this.varless.valueOf()); // in case varless is fuzzy - we just want to get ONE number.
-  var vm = /** @type {number} */(this.varmore.valueOf()); // in case varmore is fuzzy - we just want to get ONE number.
-  return this.value - vl + Math.random() * (vl + vm);
+  return this.get();
 };
-
 
 /**
  * @param {number} value The nominal value this object will represent
  * @param {number=} opt_varless how much smaller the returned values can be (default=value)
  * @param {number=} opt_varmore how much bigger the returned values can be (default=opt_varless)
+ * @param {boolean=} opt_autotick should every get invoke a tick first? (default=false)
  */
-function fnum(value, opt_varless, opt_varmore) {
-  return new noh.FuzzyNumber(value, opt_varless, opt_varmore);
-}
+noh.fnum = function(value, opt_varless, opt_varmore, opt_autotick) {
+  return new noh.FuzzyNumber(value, opt_varless, opt_varmore, opt_autotick);
+};
 
 
 /**
@@ -167,13 +290,21 @@ function fnum(value, opt_varless, opt_varmore) {
  */
 noh.FNum;
 
+/**
+ * returns a value (actual) from FuzzyNumber, or just regular number.
+ * @param {!noh.FNum} fnum
+ * @return {number}
+ */
+noh.num = function(fnum) {
+  return /** @type {number} */(fnum.valueOf());
+};
 
 /**
  * @param {noh.FNum} x 
  * @param {noh.FNum} y
  * @param {noh.FNum=} opt_speed How far it aims every time (in pixels).
  * @param {noh.FNum=} opt_agility How often it changes direction (in seconds)
- * @param {noh.FNum=} opt_ttl Afte how many ticks we disappear (undefined means we do not)
+ * @param {noh.FNum=} opt_ttl After how many ticks we disappear (undefined means we do not)
  * @return {!noh.Element}
  */
 noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
@@ -182,7 +313,7 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
 
 
   fly.speed = opt_speed || 70; // how far it aims every time (in pixels)
-  fly.agility = opt_agility === undefined ? 0.3 : /** @type {number} */ (opt_agility.valueOf()); // how often it changes direction (in seconds) (valueOf in case our agility is fuzzy)
+  fly.agility = opt_agility === undefined ? 0.3 : noh.num(opt_agility); // how often it changes direction (in seconds)
   fly.ttl = opt_ttl; // time to live - after how many ticks we disappear (undefined means we do not)
 
 
@@ -215,37 +346,51 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
     }
     if(this.z == 0 && Math.random() < 0.9)
       return;
-    var s = /** @type {number} */(this.speed.valueOf()); // in case our speed is fuzzy
+    var s = noh.num(this.speed); // in case our speed is fuzzy
     var z = Math.random() * 40 - 5;
     if(this.z == 0 && z <= 0) // we are walking - not flying
       s /= 6;
     var x = this.x + Math.random() * 2 * s - s;
     var y = this.y + Math.random() * 2 * s - s;
     this.aim(x, y, z);
+    return this;
   };
 
-  var callback = function() { fly.tick(); };
+  fly.ticker = noh.ticker([fly], fly.agility);
 
   /**
    * @this {!noh.Element}
    */
   fly.stop = function() {
-    if(this.intervalId_)
-      window.clearInterval(this.intervalId_);
-    this.intervalId_ = undefined;
+    this.ticker.stop();
+    return this;
   };
 
   /**
    * @this {!noh.Element}
    */
   fly.start = function() {
-    if(this.intervalId_)
-      this.stop();
-    this.intervalId_ = window.setInterval(callback, this.agility * 1000);
+    this.ticker.start();
+    return this;
+  };
+
+  /**
+   * @this {!noh.Element}
+   */
+  fly.started = function() {
+    return this.ticker.started();
   };
 
   return fly;
 };
+
+
+/**
+ * @type {!noh.FNum}
+ */
+noh.wind = 0;
+
+
 
 /**
  * @typedef {{
@@ -302,15 +447,27 @@ noh.tree_rec_ = function(depth, trunkw, trunkh, opt) {
   var subtrees = [];
   var b = /** @type {number} */ (opt.breadth.valueOf()); // in case the breadth is fuzzy
   for(var i = 0; i < Math.floor(b); ++i) {
-    var tl = noh.tree_rec_(depth-1, max(1, trunkw*opt.trunkw_factor), trunkh*opt.trunkh_factor, opt);
-    var tr = noh.tree_rec_(depth-1, max(1, trunkw*opt.trunkw_factor), trunkh*opt.trunkh_factor, opt);
-    tl.pos(0, -trunkh+trunkw/2 + opt.light*i*trunkh/b).torig('0px 0px').trans('rotate(' + ( opt.spread*(i+1)/b) + 'deg)');
-    tr.pos(0, -trunkh+trunkw/2 + opt.light*i*trunkh/b).torig('0px 0px').trans('rotate(' + (-opt.spread*(i+1)/b) + 'deg)');
+    var tl = noh.tree_rec_(depth-1, noh.max(1, trunkw*opt.trunkw_factor), trunkh*opt.trunkh_factor, opt);
+    var tr = noh.tree_rec_(depth-1, noh.max(1, trunkw*opt.trunkw_factor), trunkh*opt.trunkh_factor, opt);
+    tl.pos(0, -trunkh+trunkw/2 + opt.light*i*trunkh/b).torig('0px 0px').trans_rotate( opt.spread*(i+1)/b);
+    tr.pos(0, -trunkh+trunkw/2 + opt.light*i*trunkh/b).torig('0px 0px').trans_rotate(-opt.spread*(i+1)/b);
     subtrees.push(tl);
     subtrees.push(tr);
   }
-  return noh.adiv(trunk, subtrees);
+  var tree = noh.adiv(trunk, subtrees);
+  /**
+   * @this {!noh.Element}
+   */
+  tree.tick = function() {
+    this.trans_rotate_diff(noh.num(noh.wind));
+    for(var i = 0; i < subtrees.length; ++i)
+      if(subtrees[i].tick !== undefined)
+        subtrees[i].tick();
+  };
+  return tree;
 };
+
+
 
 
 

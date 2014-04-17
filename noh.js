@@ -1717,6 +1717,11 @@ noh.cmdline = function(len, opt_placeholder) {
     input.$.focus();
   };
 
+  cmdline.onfocus = function(handler) {
+    input.$.focus(handler);
+    enter.$.focus(handler);
+  };
+
   input.on("keypress", function(e) {
     if(e.which == 13)
       cmdline.run();
@@ -1737,6 +1742,12 @@ noh.objtest = function(obj, commands) {
     noh.td(obj)
   );
 
+  var cmdline = noh.cmdline(60, 'obj.some_method()');
+
+  cmdline.onfocus(function() {
+    window["obj"] = obj; 
+  });
+
   var buttons = [];
   for(var i = 0; i < commands.length; ++i) {
     var button = noh.button(commands[i]).addclass('noh button')
@@ -1752,7 +1763,6 @@ noh.objtest = function(obj, commands) {
     buttons.push(noh.br());
   }
 
-  var cmdline = noh.cmdline(60, 'obj.some_method()');
 
   return noh.div(
     noh.p(objwrap),

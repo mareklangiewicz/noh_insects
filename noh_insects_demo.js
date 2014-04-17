@@ -27,9 +27,8 @@ $(document).ready(noh_insects_demo_init);
 
 function noh_insects_demo() {
   var refresh = noh.button("Refresh");
-  refresh.on('click', function() {
-    location.reload();
-  });
+  var addbigtree = noh.button("Add some big tree");
+  var demo_trees = noh.demo_trees();
   var demo = noh.div(
     noh.fancy(noh.h1("NOH Insects demo")),
     noh.p("Please check the ", noh.a({href: "noh_doc.html"}, "NOH library documentation"), " first."),
@@ -37,13 +36,23 @@ function noh_insects_demo() {
     noh.p("Click somewhere to leave a fly on the screen :-)"),
     noh.p("TODO: implement some big spiders and other insects :-)"),
     noh.p(refresh),
-    noh.demo_trees()
+    noh.p(addbigtree, noh.br(), '(fast browser needed)'),
+    demo_trees
   );
+
 
   $(document).on('click', function(ev) {
     var fly = noh.fly(ev.clientX, ev.clientY);
     demo.add(fly);
     fly.start();
+  });
+
+
+  refresh.on('click', function() {
+    location.reload();
+  });
+  addbigtree.on('click', function() {
+    demo_trees.addbigtree();
   });
 
   return demo;
@@ -52,15 +61,24 @@ function noh_insects_demo() {
 
 noh.demo_trees = function() {
   var trees = [];
-  trees.push(noh.tree({ depth: 5, breadth: 1, spread: fnum(20, 15), trunkw:  8, trunkh:  60, trunkh_factor: fnum(0.82, 0.3) }).pos( 200, $(window).height()));
-  trees.push(noh.tree({ depth: 5, breadth: 1, spread: fnum(20, 15), trunkw:  8, trunkh:  60, trunkh_factor: fnum(0.82, 0.3) }).pos( 400, $(window).height()));
-  trees.push(noh.tree({ depth: 7, breadth: 1, spread: fnum(20, 15), trunkw: 12, trunkh: 100, trunkh_factor: fnum(0.82, 0.3) }).pos( 600, $(window).height()));
-  trees.push(noh.tree({ depth: 7, breadth: 1, spread: fnum(20, 15), trunkw: 12, trunkh: 100, trunkh_factor: fnum(0.82, 0.3) }).pos( 800, $(window).height()));
-  trees.push(noh.tree({ depth: 7, breadth: 1, spread: fnum(20, 15), trunkw: 12, trunkh: 100, trunkh_factor: fnum(0.82, 0.3) }).pos(1000, $(window).height()));
-  trees.push(noh.tree({ depth: 7, breadth: 1, spread: fnum(20, 15), trunkw: 12, trunkh: 100, trunkh_factor: fnum(0.82, 0.3) }).pos(1000, $(window).height()));
-  if(navigator.userAgent.indexOf("Chrome") != -1)
-  trees.push(noh.tree({ depth:10, breadth: 1, spread: fnum(20, 15), trunkw: 34, trunkh: 140, trunkh_factor: fnum( 0.8, 0.2) }).pos(1300, $(window).height()));
-  return noh.div(trees);
+  trees.push(noh.tree({ depth: 5, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw:  8, trunkh:  60, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 200, $(window).height()));
+  trees.push(noh.tree({ depth: 5, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw:  8, trunkh:  60, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 400, $(window).height()));
+  trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 600, $(window).height()));
+  trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 800, $(window).height()));
+  trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos(1000, $(window).height()));
+  trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos(1000, $(window).height()));
+  var demo_trees = noh.div(trees);
+  demo_trees.addbigtree = function() {
+    var x = noh.fnum(600, 400).get();
+    var bigtree = noh.tree({ depth:10, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 34, trunkh: 140, trunkh_factor: noh.fnum( 0.8, 0.2, 0.2, true) }).pos(x, $(window).height());
+    this.add(bigtree);  
+  };
+  demo_trees.tick = function() {
+    for(var i = 0; i < this.length; ++i)
+      if(this[i].tick)
+        this[i].tick();
+  };
+  return demo_trees;
 };
 
 
