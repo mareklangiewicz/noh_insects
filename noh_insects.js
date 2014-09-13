@@ -356,7 +356,7 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
     return this;
   };
 
-  fly.ticker = noh.ticker([fly], fly.agility);
+  fly.ticker = noh.ticker([fly], fly.agility * 1000);
 
   /**
    * @this {!noh.Element}

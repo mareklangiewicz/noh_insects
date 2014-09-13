@@ -58,6 +58,7 @@ function noh_insects_demo() {
   return demo;
 };
 
+noh.wind = noh.fnum(2, 2, 2, true);
 
 noh.demo_trees = function() {
   var trees = [];
@@ -66,8 +67,7 @@ noh.demo_trees = function() {
   trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 600, $(window).height()));
   trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 800, $(window).height()));
   trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos(1000, $(window).height()));
-  trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos(1000, $(window).height()));
-  var demo_trees = noh.div(trees);
+  var demo_trees = noh.div(trees).addclass("smooth very_lazy");
   demo_trees.addbigtree = function() {
     var x = noh.fnum(600, 400).get();
     var bigtree = noh.tree({ depth:10, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 34, trunkh: 140, trunkh_factor: noh.fnum( 0.8, 0.2, 0.2, true) }).pos(x, $(window).height());
@@ -78,8 +78,11 @@ noh.demo_trees = function() {
       if(this[i].tick)
         this[i].tick();
   };
+  var ticker = noh.ticker(demo_trees, 6000);
+  ticker.start();
   return demo_trees;
 };
+
 
 
 
