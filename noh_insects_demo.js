@@ -27,7 +27,7 @@ $(document).ready(noh_insects_demo_init);
 
 function noh_insects_demo() {
   var refresh = noh.button("Refresh");
-  var addbigtree = noh.button("Add some big tree");
+  var addbigtree = noh.button("Add a big tree");
   var demo_trees = noh.demo_trees();
   var demo = noh.div(
     noh.fancy(noh.h1("NOH Insects demo")),
