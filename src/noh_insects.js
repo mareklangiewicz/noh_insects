@@ -6,6 +6,10 @@
  * This file contains main code for the NOH Insects library
  */
 
+var $ = require('jquery');
+var noh = require('noh.js');
+
+// FIXME: this file modifies the noh object - it should not :-)
 
 /**
 TODO: generowanie drogi:
@@ -467,6 +471,7 @@ noh.tree_rec_ = function(depth, trunkw, trunkh, opt) {
   return tree;
 };
 
+module.exports = noh;
 
 
 

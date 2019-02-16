@@ -7,6 +7,9 @@
  */
 
 
+var $ = require('jquery');
+var noh = require('./noh_insects.js'); // FIXME: noh_insects.js modifies and exports the noh object - fix it someday
+
 
 /**
  * This function will insert tree with all tests to DOM element with id="noh_insects_tests"

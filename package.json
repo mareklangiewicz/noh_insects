@@ -1,0 +1,38 @@
+{
+  "name": "noh-insects",
+  "version": "1.0.0",
+  "description": "Add some insects to a website.",
+  "main": "dist/noh_insects.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack-dev-server --entry ./src/noh_insects_tests.js --output-filename ./dist/noh_insects_tests.js --open-page ./noh_insects_tests.html",
+    "demo": "webpack-dev-server --entry ./src/noh_insects_demo.js --output-filename ./dist/noh_insects_demo.js --open-page ./noh_insects_demo.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/langara/noh_insects.git"
+  },
+  "keywords": [
+    "js",
+    "web",
+    "app",
+    "small",
+    "example",
+    "graphics",
+    "animation"
+  ],
+  "author": "Marek Langiewicz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/langara/noh_insects/issues"
+  },
+  "homepage": "https://github.com/langara/noh_insects#readme",
+  "dependencies": {
+    "noh.js": "^1.0.3"
+  },
+  "devDependencies": {
+    "webpack": "^4.29.4",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.1.14"
+  }
+}
