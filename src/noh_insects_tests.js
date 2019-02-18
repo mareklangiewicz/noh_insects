@@ -18,13 +18,13 @@ var noh = require('./noh_insects.js'); // FIXME: noh_insects.js modifies and exp
  */
 function noh_insects_tests_init() {
   var container = $('#noh_insects_tests');
-  if(container.length == 0)
+  if(container.length === 0)
     return;
   var tests = noh_insects_tests();
   tests.attachToDOM(container[0]);
 }
 
-$(document).ready(noh_insects_tests_init);
+$(noh_insects_tests_init);
 
 
 
@@ -75,8 +75,7 @@ function runstests(stests) {
       noh.dt(noh.fancy(noh.h3({id:"stest_" + t}, "stest: ", t))).css("padding", "20px"),
       noh.dd(runstest(stests[t]))
     );
-  var runtests = noh.dl(testsres);
-  return runtests;
+    return noh.dl(testsres);
 }
 
 function stests_toc(stests) {
@@ -99,7 +98,7 @@ function noh_insects_tests() {
     stests_toc(tests),
     runstests(tests)
   );
-};
+}
 
 
 

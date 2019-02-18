@@ -7,6 +7,7 @@
  */
 
 
+require('./demo.css');
 var $ = require('jquery');
 var noh = require('./noh_insects.js'); // FIXME: noh_insects.js modifies and exports the noh object - fix it someday
 
@@ -18,13 +19,13 @@ var noh = require('./noh_insects.js'); // FIXME: noh_insects.js modifies and exp
  */
 function noh_insects_demo_init() {
   var container = $('#noh_insects_demo');
-  if(container.length == 0)
+  if(container.length === 0)
     return;
   var demo = noh_insects_demo();
   demo.attachToDOM(container[0]);
 }
 
-$(document).ready(noh_insects_demo_init);
+$(noh_insects_demo_init);
 
 
 
@@ -59,7 +60,7 @@ function noh_insects_demo() {
   });
 
   return demo;
-};
+}
 
 noh.wind = noh.fnum(2, 2, 2, true);
 

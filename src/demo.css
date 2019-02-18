@@ -1,0 +1,4 @@
+/* [ vim: set tabstop=2 shiftwidth=2 expandtab : ] */
+
+.smooth.very_lazy * { transition: all   6s ease-in-out; }
+

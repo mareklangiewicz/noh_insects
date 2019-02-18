@@ -348,11 +348,11 @@ noh.fly = function(x, y, opt_speed, opt_agility, opt_ttl) {
       this.stop();
       this.css('display', 'none');
     }
-    if(this.z == 0 && Math.random() < 0.9)
+    if(this.z === 0 && Math.random() < 0.9)
       return;
     var s = noh.num(this.speed); // in case our speed is fuzzy
     var z = Math.random() * 40 - 5;
-    if(this.z == 0 && z <= 0) // we are walking - not flying
+    if(this.z === 0 && z <= 0) // we are walking - not flying
       s /= 6;
     var x = this.x + Math.random() * 2 * s - s;
     var y = this.y + Math.random() * 2 * s - s;
