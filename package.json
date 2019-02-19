@@ -1,6 +1,6 @@
 {
   "name": "noh-insects",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Add some insects to a website.",
   "main": "dist/noh_insects.js",
   "scripts": {

@@ -3,13 +3,16 @@
 /**                                           
  * @author marek.langiewicz@gmail.com (Marek Langiewicz)
  * @fileoverview
- * This file contains tests for the NOH Insects library
+ * This file contains demo for the NOH Insects library
  */
 
 
-require('./demo.css');
 var $ = require('jquery');
-var noh = require('./noh_insects.js'); // FIXME: noh_insects.js modifies and exports the noh object - fix it someday
+var noh = require('noh.js');
+var insects = require('./noh_insects.js');
+
+var forest = insects.forest;
+var wind = insects.wind;
 
 
 /**
@@ -32,7 +35,7 @@ $(noh_insects_demo_init);
 function noh_insects_demo() {
   var refresh = noh.button("Refresh");
   var addbigtree = noh.button("Add a big tree");
-  var demo_trees = noh.demo_trees();
+  var demo_forest = forest();
   var demo = noh.div(
     noh.fancy(noh.h1("NOH Insects demo")),
     noh.p("Please check the ", noh.a({href: "noh_doc.html"}, "NOH library documentation"), " first."),
@@ -41,12 +44,12 @@ function noh_insects_demo() {
     noh.p("TODO: implement some big spiders and other insects :-)"),
     noh.p(refresh),
     noh.p(addbigtree, noh.br(), '(fast browser needed)'),
-    demo_trees
+    demo_forest
   );
 
 
   $(document).on('click', function(ev) {
-    var fly = noh.fly(ev.clientX, ev.clientY);
+    var fly = fly(ev.clientX, ev.clientY);
     demo.add(fly);
     fly.start();
   });
@@ -56,36 +59,13 @@ function noh_insects_demo() {
     location.reload();
   });
   addbigtree.on('click', function() {
-    demo_trees.addbigtree();
+    demo_forest.addbigtree();
   });
 
   return demo;
 }
 
-noh.wind = noh.fnum(2, 2, 2, true);
-
-noh.demo_trees = function() {
-  var trees = [];
-  trees.push(noh.tree({ depth: 5, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw:  8, trunkh:  60, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 200, $(window).height()));
-  trees.push(noh.tree({ depth: 5, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw:  8, trunkh:  60, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 400, $(window).height()));
-  trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 600, $(window).height()));
-  trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos( 800, $(window).height()));
-  trees.push(noh.tree({ depth: 7, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 12, trunkh: 100, trunkh_factor: noh.fnum(0.82, 0.3, 0.3, true) }).pos(1000, $(window).height()));
-  var demo_trees = noh.div(trees).addclass("smooth very_lazy");
-  demo_trees.addbigtree = function() {
-    var x = noh.fnum(600, 400).get();
-    var bigtree = noh.tree({ depth:10, breadth: 1, spread: noh.fnum(20, 15, 15, true), trunkw: 34, trunkh: 140, trunkh_factor: noh.fnum( 0.8, 0.2, 0.2, true) }).pos(x, $(window).height());
-    this.add(bigtree);  
-  };
-  demo_trees.tick = function() {
-    for(var i = 0; i < this.length; ++i)
-      if(this[i].tick)
-        this[i].tick();
-  };
-  var ticker = noh.ticker(demo_trees, 6000);
-  ticker.start();
-  return demo_trees;
-};
+wind.strength = fnum(2, 2, 2, true);
 
 
 

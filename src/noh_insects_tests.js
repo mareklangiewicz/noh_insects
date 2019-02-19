@@ -8,8 +8,11 @@
 
 
 var $ = require('jquery');
-var noh = require('./noh_insects.js'); // FIXME: noh_insects.js modifies and exports the noh object - fix it someday
+var noh = require('noh.js');
+var insects = require('./noh_insects.js');
 
+var wind = insects.wind;
+window.wind = wind; // so it is available from objtest commands
 
 /**
  * This function will insert tree with all tests to DOM element with id="noh_insects_tests"
@@ -160,8 +163,8 @@ function install_logger(logger) {
 
 tests.rect = function() {
 
-  var r1 = noh.rect('200px', '80px', 'black', '15px');
-  var r2 = noh.rect('150px', '60px', 'blue', '7px').pos('150px', '30px');
+  var r1 = rect('200px', '80px', 'black', '15px');
+  var r2 = rect('150px', '60px', 'blue', '7px').pos('150px', '30px');
   var obj = noh.div(r1, r2)
     .css('position', 'relative')
     .size(400, 300);
@@ -182,7 +185,7 @@ tests.rect = function() {
 
 
 /**
- * @param {noh.FuzzyNumber} number
+ * @param {FuzzyNumber} number
  * @param {number|string=} opt_width
  * @param {number|string=} opt_height
  * @return {!noh.Element}
@@ -206,7 +209,7 @@ noh.fuzzytester = function(number, opt_width, opt_height) {
    */
   tester.test = function() {
     for(var i = 0; i < 100; ++i) {
-      var r = noh.rect(4,4,'blue',3).pos('' + (number.tick().get()) + '%', '' + i + '%');
+      var r = rect(4,4,'blue',3).pos('' + (number.tick().get()) + '%', '' + i + '%');
       this.add(r);
     }
   };
@@ -217,7 +220,7 @@ noh.fuzzytester = function(number, opt_width, opt_height) {
 
 tests.fuzzy1 = function() {
 
-  var number = noh.fnum(50, 30);
+  var number = fnum(50, 30);
   var obj = noh.fuzzytester(number);
 
   return noh.objtest(obj, [
@@ -229,7 +232,7 @@ tests.fuzzy1 = function() {
 
 tests.fuzzy2 = function() {
 
-  var number = noh.fnum(50, 30, 10);
+  var number = fnum(50, 30, 10);
   var obj = noh.fuzzytester(number);
 
   return noh.objtest(obj, [
@@ -242,7 +245,7 @@ tests.fuzzy2 = function() {
 
 tests.fuzzy3 = function() {
 
-  var number = noh.fnum(50, noh.fnum(15, 15, 15, true));
+  var number = fnum(50, fnum(15, 15, 15, true));
   var obj = noh.fuzzytester(number);
 
   return noh.objtest(obj, [
@@ -255,7 +258,7 @@ tests.fuzzy3 = function() {
 
 tests.fuzzy4 = function() {
 
-  var number = noh.fnum(50, noh.fnum(15, 5, 5, true));
+  var number = fnum(50, fnum(15, 5, 5, true));
   var obj = noh.fuzzytester(number);
 
   return noh.objtest(obj, [
@@ -270,7 +273,7 @@ tests.fuzzy4 = function() {
 
 tests.fly = function() {
 
-  var obj = noh.adiv(noh.fly(30, 30));
+  var obj = adiv(fly(30, 30));
 
   return noh.objtest(obj, [
     'obj[0].start()',
@@ -282,12 +285,12 @@ tests.fly = function() {
 
 tests.flies = function() {
 
-  var speed = noh.fnum(90, 30, 30, true);
-  var agility = noh.fnum(0.3, 0.1, 0.1, true);
+  var speed = fnum(90, 30, 30, true);
+  var agility = fnum(0.3, 0.1, 0.1, true);
   var flies = [];
   for(var i = 0; i < 10; ++i)
-    flies.push(noh.fly(500 + i * 3, 300 + i * 4, speed, agility, 300));
-  var obj = noh.adiv(flies);
+    flies.push(fly(500 + i * 3, 300 + i * 4, speed, agility, 300));
+  var obj = adiv(flies);
 
   return noh.objtest(obj, [
     'for(var i = 0; i < 5; ++i) obj[i].start()',
@@ -304,7 +307,7 @@ tests.fly_click = function() {
 
   var obj = noh.div().size(400, 400);
   obj.$.on('click', function(ev) {
-    var fly = noh.fly(ev.clientX, ev.clientY);
+    var fly = fly(ev.clientX, ev.clientY);
     obj.add(fly);
     fly.start();
   });
@@ -319,14 +322,14 @@ tests.fly_click = function() {
 
 
 
-noh.wind = noh.fnum(2, 2, 2, true);
+wind.strength = fnum(2, 2, 2, true);
 
 
 
 
 tests.tree_def = function() {
 
-  var obj = noh.div(noh.tree().pos(200, 300))
+  var obj = noh.div(tree().pos(200, 300))
     .css('position', 'relative')
     .css('width', '500px')
     .css('height', '400px');
@@ -338,7 +341,7 @@ tests.tree_def = function() {
 
 tests.tree2 = function() {
 
-  var obj = noh.div(noh.tree({depth:2}).pos(200, 300))
+  var obj = noh.div(tree({depth:2}).pos(200, 300))
     .css('position', 'relative')
     .css('width', '500px')
     .css('height', '400px');
@@ -351,11 +354,11 @@ tests.tree2 = function() {
 tests.tree3 = function() {
 
   var trees = [
-    noh.tree({depth: 2, breadth: 7}).pos(200, 300),
-    noh.tree({depth: 3, breadth: 2}).pos(400, 300),
-    noh.tree({depth: 3, breadth: 5}).pos(600, 300),
-    noh.tree({depth: 3}).pos(800, 300),
-    noh.tree({depth: 4, breadth: 2}).pos(1000, 300)
+    tree({depth: 2, breadth: 7}).pos(200, 300),
+    tree({depth: 3, breadth: 2}).pos(400, 300),
+    tree({depth: 3, breadth: 5}).pos(600, 300),
+    tree({depth: 3}).pos(800, 300),
+    tree({depth: 4, breadth: 2}).pos(1000, 300)
   ];
 
 
@@ -365,14 +368,14 @@ tests.tree3 = function() {
     .css('position', 'relative')
     .size(800, 400);
 
-  obj.ticker = noh.ticker([noh.wind, trees[0], trees[1], trees[2], trees[3], trees[4]], 6000);
+  obj.ticker = ticker([wind, trees[0], trees[1], trees[2], trees[3], trees[4]], 6000);
 
   return noh.objtest(obj, [
-    'noh.wind = noh.fnum(2, 2, 2, true)',
-    'noh.wind = noh.fnum(2)',
-    'noh.wind = noh.fnum(0, 1, 1, true)',
-    'noh.wind = noh.fnum(8, 1, 1, true)',
-    'noh.wind = noh.fnum(8, 5, 5, true)',
+    'wind.strength = fnum(2, 2, 2, true)',
+    'wind.strength = fnum(2)',
+    'wind.strength = fnum(0, 1, 1, true)',
+    'wind.strength = fnum(8, 1, 1, true)',
+    'wind.strength = fnum(8, 5, 5, true)',
     'obj.ticker.start()',
     'obj.ticker.stop()',
     'obj.ticker.change_interval(200)',
@@ -385,24 +388,24 @@ tests.tree3 = function() {
 tests.tree4 = function() {
 
   var obj = noh.div(
-    noh.tree({
+    tree({
       depth: 6,
       breadth: 1,
-      spread: noh.fnum(20, 15, 15, true),
+      spread: fnum(20, 15, 15, true),
       trunkw: 10,
       trunkh: 100,
-      trunkh_factor: noh.fnum(0.8, 0.3, 0.3, true)
+      trunkh_factor: fnum(0.8, 0.3, 0.3, true)
     }).pos(300, 300),
-    noh.tree({
+    tree({
       depth: 3,
-      breadth: noh.fnum(3, 1, 1, true),
-      spread: noh.fnum(50, 10, 10, true),
+      breadth: fnum(3, 1, 1, true),
+      spread: fnum(50, 10, 10, true),
       trunkw: 6,
       trunkh: 200,
-      light: noh.fnum(1, 0.5, 0.5, true)
+      light: fnum(1, 0.5, 0.5, true)
     }).pos(500, 300),
-    noh.tree({depth: 4}).pos(800, 300),
-    noh.tree({depth: 4, breadth: 2}).pos(1000, 300)
+    tree({depth: 4}).pos(800, 300),
+    tree({depth: 4, breadth: 2}).pos(1000, 300)
   )
     .css('position', 'relative')
     .size(800, 400);
@@ -414,45 +417,45 @@ tests.tree4 = function() {
 
 tests.tree5 = function() {
   var trees = [
-    noh.tree({
+    tree({
       depth: 7,
       breadth: 1,
-      spread: noh.fnum(20, 15, 15, true),
+      spread: fnum(20, 15, 15, true),
       trunkw: 14,
       trunkh: 100,
-      trunkh_factor: noh.fnum(0.8, 0.2, 0.2, true)
+      trunkh_factor: fnum(0.8, 0.2, 0.2, true)
     }).pos(200, 300),
-    noh.tree({
+    tree({
       depth: 7,
       breadth: 1,
-      spread: noh.fnum(20, 15, 15, true),
+      spread: fnum(20, 15, 15, true),
       trunkw: 14,
       trunkh: 100,
-      trunkh_factor: noh.fnum(0.8, 0.2, 0.2, true)
+      trunkh_factor: fnum(0.8, 0.2, 0.2, true)
     }).pos(400, 300),
-    noh.tree({
+    tree({
       depth: 10,
       breadth: 1,
-      spread: noh.fnum(20, 15, 15, true),
+      spread: fnum(20, 15, 15, true),
       trunkw: 34,
       trunkh: 140,
-      trunkh_factor: noh.fnum(0.8, 0.2, 0.2, true)
+      trunkh_factor: fnum(0.8, 0.2, 0.2, true)
     }).pos(500, 300),
-    noh.tree({
+    tree({
       depth: 7,
       breadth: 1,
-      spread: noh.fnum(20, 15, 15, true),
+      spread: fnum(20, 15, 15, true),
       trunkw: 14,
       trunkh: 100,
-      trunkh_factor: noh.fnum(0.8, 0.2, 0.2, true)
+      trunkh_factor: fnum(0.8, 0.2, 0.2, true)
     }).pos(700, 300),
-    noh.tree({
+    tree({
       depth: 10,
       breadth: 1,
-      spread: noh.fnum(20, 15, 15, true),
+      spread: fnum(20, 15, 15, true),
       trunkw: 34,
       trunkh: 140,
-      trunkh_factor: noh.fnum(0.8, 0.2, 0.2, true)
+      trunkh_factor: fnum(0.8, 0.2, 0.2, true)
     }).pos(900, 300)
   ];
 
@@ -461,14 +464,14 @@ tests.tree5 = function() {
     .css('position', 'relative')
     .size(800, 400);
 
-  obj.ticker = noh.ticker([noh.wind, trees[0], trees[1], trees[2], trees[3], trees[4]], 6000);
+  obj.ticker = ticker([wind, trees[0], trees[1], trees[2], trees[3], trees[4]], 6000);
 
   return noh.objtest(obj, [
-    'noh.wind = noh.fnum(2, 2, 2, true)',
-    'noh.wind = noh.fnum(2)',
-    'noh.wind = noh.fnum(0, 1, 1, true)',
-    'noh.wind = noh.fnum(8, 1, 1, true)',
-    'noh.wind = noh.fnum(8, 5, 5, true)',
+    'wind.strength = fnum(2, 2, 2, true)',
+    'wind.strength = fnum(2)',
+    'wind.strength = fnum(0, 1, 1, true)',
+    'wind.strength = fnum(8, 1, 1, true)',
+    'wind.strength = fnum(8, 5, 5, true)',
     'obj.ticker.tick()',
     'obj.ticker.start()',
     'obj.ticker.stop()',
