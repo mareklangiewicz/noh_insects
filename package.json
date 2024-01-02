@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/langara/noh_insects.git"
+    "url": "git+https://github.com/mareklangiewicz/noh_insects.git"
   },
   "keywords": [
     "js",
@@ -24,9 +24,9 @@
   "author": "Marek Langiewicz",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/langara/noh_insects/issues"
+    "url": "https://github.com/mareklangiewicz/noh_insects/issues"
   },
-  "homepage": "https://github.com/langara/noh_insects#readme",
+  "homepage": "https://github.com/mareklangiewicz/noh_insects#readme",
   "dependencies": {
     "noh.js": "^1.0.3"
   },
